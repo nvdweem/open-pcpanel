@@ -1,0 +1,11 @@
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+.idea
+
+### VS Code ###
+/sndctrl++/.vs/
+/sndctrl++/Debug/
+/sndctrl++/x64/
+/core/src/main/resources/SndCtrl.dll

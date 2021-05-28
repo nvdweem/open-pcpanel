@@ -1,0 +1,9 @@
+pluginManagement {
+    repositories {
+        maven { url 'https://repo.spring.io/snapshot' }
+        gradlePluginPortal()
+    }
+}
+rootProject.name = 'open-pcpanel'
+include 'core'
+include 'winsndctrl'
