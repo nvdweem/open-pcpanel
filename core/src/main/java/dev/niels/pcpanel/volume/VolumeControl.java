@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 @Slf4j
 public class VolumeControl {
-    public static void main(String... args) {
+    public static void xmain(String... args) {
         System.out.println("Test!");
 
         var dIds = new ArrayList<String>();

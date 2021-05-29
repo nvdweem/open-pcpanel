@@ -9,3 +9,4 @@ build/
 /sndctrl++/Debug/
 /sndctrl++/x64/
 /core/src/main/resources/SndCtrl.dll
+/core/src/main/resources/public/
