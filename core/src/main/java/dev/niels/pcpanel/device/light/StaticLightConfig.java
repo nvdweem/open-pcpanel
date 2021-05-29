@@ -1,5 +1,6 @@
 package dev.niels.pcpanel.device.light;
 
+import dev.niels.pcpanel.device.light.control.IControlConfig;
 import dev.niels.pcpanel.helper.ByteArrayBuilder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -8,7 +9,7 @@ import java.awt.Color;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class StaticLightConfig extends LightConfig {
+public class StaticLightConfig extends LightConfig implements IControlConfig.BodyConfig {
     private Color color;
 
     @Override

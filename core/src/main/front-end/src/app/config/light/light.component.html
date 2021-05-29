@@ -1,0 +1,67 @@
+<mat-drawer-container *ngIf="state$ | async as state">
+  <mat-drawer mode="side" opened>
+    <mat-nav-list>
+      <a mat-list-item *ngIf="state.hasStatic" [class.active]="selected === 'static' || !selected" (click)="selected = 'static'">Static</a>
+      <a mat-list-item *ngIf="state.hasWave" [class.active]="selected === 'wave'" (click)="selected = 'wave'">Wave</a>
+      <a mat-list-item *ngIf="state.hasRainbow" [class.active]="selected === 'rainbow'" (click)="selected = 'rainbow'">Rainbow</a>
+      <a mat-list-item *ngIf="state.hasBreath" [class.active]="selected === 'breath'" (click)="selected = 'breath'">Breath</a>
+      <a mat-list-item *ngIf="state.hasVolumeGradient" [class.active]="selected === 'volumeGradient'" (click)="selected = 'volumeGradient'">Volume gradient</a>
+      <a mat-list-item *ngIf="state.hasGradient" [class.active]="selected === 'gradient'" (click)="selected = 'gradient'">Gradient</a>
+    </mat-nav-list>
+  </mat-drawer>
+  <mat-drawer-content [ngSwitch]="selected" [formGroup]="group">
+    <div *ngSwitchDefault>
+      <span>Color</span>
+      <chrome-picker [(color)]="color1" [control]="regular1"></chrome-picker>
+    </div>
+    <div *ngSwitchCase="'wave'">
+      <span>Hue</span>
+      <hue-component [(hue)]="color" [(color)]="clr"></hue-component>
+
+      <span>Brightness</span>
+      <mat-slider formControlName="brightness" thumbLabel class="w-100" (input)="group.patchValue({brightness: $event.value})" [max]="255"></mat-slider>
+
+      <span>Speed</span>
+      <mat-slider formControlName="speed" thumbLabel class="w-100" (input)="group.patchValue({speed: $event.value})" [max]="255"></mat-slider>
+
+      <mat-checkbox formControlName="reverse">Reverse direction</mat-checkbox>
+      <mat-checkbox formControlName="bounce">Bounce</mat-checkbox>
+    </div>
+    <div *ngSwitchCase="'rainbow'">
+      <span>Phase shift</span>
+      <mat-slider formControlName="phaseShift" thumbLabel class="w-100" (input)="group.patchValue({phaseShift: $event.value})" [max]="255"></mat-slider>
+
+      <span>Brightness</span>
+      <mat-slider formControlName="brightness" thumbLabel class="w-100" (input)="group.patchValue({brightness: $event.value})" [max]="255"></mat-slider>
+
+      <span>Speed</span>
+      <mat-slider formControlName="speed" thumbLabel class="w-100" (input)="group.patchValue({speed: $event.value})" [max]="255"></mat-slider>
+
+      <mat-checkbox formControlName="reverse">Reverse direction</mat-checkbox>
+    </div>
+    <div *ngSwitchCase="'breath'">
+      <span>Hue</span>
+      <hue-component [(hue)]="color" [(color)]="clr"></hue-component>
+
+      <span>Brightness</span>
+      <mat-slider formControlName="brightness" thumbLabel class="w-100" (input)="group.patchValue({brightness: $event.value})" [max]="255"></mat-slider>
+
+      <span>Speed</span>
+      <mat-slider formControlName="speed" thumbLabel class="w-100" (input)="group.patchValue({speed: $event.value})" [max]="255"></mat-slider>
+    </div>
+    <div *ngSwitchCase="'volumeGradient'">
+      <span>Color at 100</span>
+      <chrome-picker [(color)]="color1" [control]="regular1"></chrome-picker>
+
+      <span>Color at 0</span>
+      <chrome-picker [(color)]="color2" [control]="regular2"></chrome-picker>
+    </div>
+    <div *ngSwitchCase="'gradient'">
+      <span>Top color</span>
+      <chrome-picker [(color)]="color1" [control]="regular1"></chrome-picker>
+
+      <span>Bottom color</span>
+      <chrome-picker [(color)]="color2" [control]="regular2"></chrome-picker>
+    </div>
+  </mat-drawer-content>
+</mat-drawer-container>

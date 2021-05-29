@@ -1,0 +1,9 @@
+<nav mat-tab-nav-bar *ngIf="state$ | async as state">
+  <a *ngIf="state.hasButton" mat-tab-link routerLink="click" routerLinkActive #click="routerLinkActive"
+     [active]="click.isActive"> Click </a>
+  <a *ngIf="state.hasAnalog" mat-tab-link routerLink="analog" routerLinkActive #analog="routerLinkActive"
+     [active]="analog.isActive"> Analog </a>
+  <a mat-tab-link routerLink="light" routerLinkActive #light="routerLinkActive" [active]="light.isActive"> Light </a>
+</nav>
+
+<router-outlet></router-outlet>

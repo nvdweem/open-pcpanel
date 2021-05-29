@@ -1,12 +1,13 @@
 package dev.niels.pcpanel.device.light;
 
+import dev.niels.pcpanel.device.light.control.IControlConfig;
 import dev.niels.pcpanel.helper.ByteArrayBuilder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class RainbowLightConfig extends LightConfig {
+public class RainbowLightConfig extends LightConfig implements IControlConfig.BodyConfig {
     private int phaseShift;
     private int brightness;
     private int speed;

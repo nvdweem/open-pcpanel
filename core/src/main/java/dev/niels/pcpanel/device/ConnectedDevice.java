@@ -24,19 +24,24 @@ import java.util.List;
 public class ConnectedDevice {
     private static final int PACKET_LENGTH = 64;
     private final ApplicationEventPublisher eventPublisher;
-    public HidDevice device;
+    private HidDevice device;
     private boolean running = true;
-    @Getter private List<Integer> states = new ArrayList<>();
+    @Getter private final List<Integer> states = new ArrayList<>();
+    @Getter private Device type;
+    @Getter private String id;
 
-    public void init(HidDevice device) {
+    public ConnectedDevice init(HidDevice device) {
         this.device = device;
+        this.id = device.getSerialNumber();
         init(Device.getPanelType(device).orElseThrow(() -> new IllegalArgumentException("Init called for non-PCPanel device")));
         log.info("Device connected! {}", device);
 
         new Thread(this::run).start();
+        return this;
     }
 
     private void init(Device device) {
+        this.type = device;
         for (int i = 0; i < device.getAnalogCount(); i++) {
             states.add(0);
         }

@@ -10,5 +10,11 @@ public interface IControlConfig {
     interface SliderLabelControlConfig extends IControlConfig {}
     interface SliderControlConfig extends IControlConfig {}
     interface LogoControlConfig extends IControlConfig {}
+    interface BodyConfig extends IControlConfig {
+         byte[][] toCommand();
+         @Override default void appendToBuilder(ByteArrayBuilder builder) {
+             builder.append(toCommand()[0]);
+         }
+    }
 // @formatter:on
 }

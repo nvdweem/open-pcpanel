@@ -1,10 +1,13 @@
 package dev.niels.pcpanel.helper;
 
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
+@Slf4j
 @NoArgsConstructor
 public class ByteArrayBuilder {
     private final ByteArrayOutputStream stream = new ByteArrayOutputStream(64);
@@ -27,6 +30,16 @@ public class ByteArrayBuilder {
             stream.write(nr);
         }
         afterMark += nrs.length;
+        return this;
+    }
+
+    public ByteArrayBuilder append(byte[] buff) {
+        try {
+            stream.write(buff);
+            afterMark += buff.length;
+        } catch (IOException e) {
+            log.error("Unable to write buff", e);
+        }
         return this;
     }
 

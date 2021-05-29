@@ -1,12 +1,13 @@
 package dev.niels.pcpanel.device.light;
 
+import dev.niels.pcpanel.device.light.control.IControlConfig;
 import dev.niels.pcpanel.helper.ByteArrayBuilder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class WaveLightConfig extends LightConfig {
+public class WaveLightConfig extends LightConfig implements IControlConfig.BodyConfig {
     private int hue;
     private int brightness;
     private int speed;
