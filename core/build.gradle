@@ -39,6 +39,12 @@ node {
 task npm_run_build(type: NpmTask) {
     args = ['run', 'build']
 }
-tasks.named('classes') {
+tasks.named('jar') {
     dependsOn(npm_run_build)
+}
+
+jar {
+    from('src/main/resources') {
+        include 'public/**/*'
+    }
 }
