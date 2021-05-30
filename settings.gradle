@@ -1,9 +1,20 @@
 pluginManagement {
-    repositories {
-        maven { url 'https://repo.spring.io/snapshot' }
-        gradlePluginPortal()
-    }
+  repositories {
+    maven { url 'https://repo.spring.io/snapshot' }
+    gradlePluginPortal()
+  }
 }
 rootProject.name = 'open-pcpanel'
-include 'core'
+
+allprojects {
+  group = 'dev.niels'
+  version = '1.0.0-SNAPSHOT'
+  sourceCompatibility = '11'
+}
+
 include 'winsndctrl'
+include 'core'
+include 'applicationstarter'
+include 'volumecontrol'
+include 'volumecontrol'
+

@@ -2,11 +2,17 @@ package dev.niels.pcpanel.device.light;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.niels.pcpanel.device.Device;
-import dev.niels.pcpanel.device.light.control.GradientConfig;
-import dev.niels.pcpanel.device.light.control.LogoBreathConfig;
-import dev.niels.pcpanel.device.light.control.StaticConfig;
-import dev.niels.pcpanel.device.light.control.VolumeGradientConfig;
+import dev.niels.pcpanel.core.device.Device;
+import dev.niels.pcpanel.core.device.light.BreathLightConfig;
+import dev.niels.pcpanel.core.device.light.CustomLightConfig;
+import dev.niels.pcpanel.core.device.light.LightConfig;
+import dev.niels.pcpanel.core.device.light.RainbowLightConfig;
+import dev.niels.pcpanel.core.device.light.StaticLightConfig;
+import dev.niels.pcpanel.core.device.light.WaveLightConfig;
+import dev.niels.pcpanel.core.device.light.control.GradientConfig;
+import dev.niels.pcpanel.core.device.light.control.LogoBreathConfig;
+import dev.niels.pcpanel.core.device.light.control.StaticConfig;
+import dev.niels.pcpanel.core.device.light.control.VolumeGradientConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
