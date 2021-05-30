@@ -56,9 +56,9 @@ export class LightComponent {
         idx: ps.number,
       });
       return {
-        hasWave: ['body', 'logo'].indexOf(type) !== -1,
+        hasWave: ['body'].indexOf(type) !== -1,
         hasRainbow: ['body', 'logo'].indexOf(type) !== -1,
-        hasBreath: ['body'].indexOf(type) !== -1,
+        hasBreath: ['body', 'logo'].indexOf(type) !== -1,
         hasStatic: true,
         hasVolumeGradient: ['knob', 'slider'].indexOf(type) !== -1,
         hasGradient: ['slider'].indexOf(type) !== -1,
