@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {debounceTime, map} from 'rxjs/operators';
-import {Observable} from 'rxjs';
+import {combineLatest, Observable} from 'rxjs';
 import {FormControl, FormGroup} from '@angular/forms';
 import {Color, ColorPickerControl} from '@iplab/ngx-color-picker';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
@@ -48,13 +48,14 @@ export class LightComponent {
       bounce: new FormControl(),
     });
 
-    this.state$ = combineAllParams(route).pipe(map(ps => {
-      const type = ps.type;
+    this.state$ = combineLatest([combineAllParams(route), route.data]).pipe(map(([ps, data]) => {
+      const type = data.label ? 'slider-label' : ps.type;
       this.group.patchValue({
         device: ps.device,
         control: type,
         idx: ps.number,
       });
+
       return {
         hasWave: ['body'].indexOf(type) !== -1,
         hasRainbow: ['body', 'logo'].indexOf(type) !== -1,

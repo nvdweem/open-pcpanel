@@ -2,6 +2,7 @@
   <a *ngIf="state.hasButton" mat-tab-link routerLink="click" routerLinkActive #click="routerLinkActive" [active]="click.isActive"> Click </a>
   <a *ngIf="state.hasAnalog" mat-tab-link routerLink="analog" routerLinkActive #analog="routerLinkActive" [active]="analog.isActive"> Analog </a>
   <a mat-tab-link routerLink="light" routerLinkActive #light="routerLinkActive" [active]="light.isActive"> Light </a>
+  <a *ngIf="state.hasLabelLight" mat-tab-link routerLink="label-light" routerLinkActive #labelLight="routerLinkActive" [active]="labelLight.isActive"> Label light </a>
 </nav>
 
 <router-outlet></router-outlet>

@@ -6,6 +6,7 @@ import {map} from 'rxjs/operators';
 interface State {
   hasButton: boolean;
   hasAnalog: boolean;
+  hasLabelLight: boolean;
 }
 
 @Component({
@@ -22,7 +23,8 @@ export class ControlConfigurationComponent {
       const type = String(ps.get('type'));
       const hasButton = ['knob'].indexOf(type) !== -1;
       const hasAnalog = ['knob', 'slider'].indexOf(type) !== -1;
-      return {hasButton, hasAnalog};
+      const hasLabelLight = ['slider'].indexOf(type) !== -1;
+      return {hasButton, hasAnalog, hasLabelLight};
     }));
   }
 }

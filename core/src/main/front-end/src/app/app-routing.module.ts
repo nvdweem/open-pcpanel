@@ -17,6 +17,7 @@ const routes: Routes = [
             {path: 'click', component: ClickableComponent},
             {path: 'analog', component: AnalogComponent},
             {path: 'light', component: LightComponent},
+            {path: 'label-light', component: LightComponent, data: {label: true}},
           ]
         },
       ]

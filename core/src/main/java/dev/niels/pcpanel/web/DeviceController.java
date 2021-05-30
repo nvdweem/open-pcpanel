@@ -68,7 +68,7 @@ public class DeviceController {
       case "slider":
         cfg.setSlider(idx, (IControlConfig.SliderControlConfig) controlConfig);
         break;
-      case "sliderLabel":
+      case "slider-label":
         cfg.setSliderLabel(idx, (StaticConfig) controlConfig);
         break;
       case "logo":
