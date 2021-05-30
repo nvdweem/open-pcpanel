@@ -16,7 +16,7 @@ export class SelectDeviceComponent {
   constructor(deviceService: DeviceService, router: Router) {
     this.devices$ = deviceService.devices$.pipe(take(1), tap(ds => {
       if (ds.length > 0) {
-        router.navigate([`${ds[0].id}/profile/`]);
+        router.navigate([`${ds[0].id}`], {replaceUrl: true});
       }
     }));
   }

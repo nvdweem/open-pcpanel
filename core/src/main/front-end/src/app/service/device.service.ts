@@ -7,6 +7,14 @@ export interface Device {
   states: number[];
   type: 'PCPANEL_PRO';
   id: string;
+  profiles: Profile[];
+}
+
+export interface Profile {
+  id: number;
+  device: string;
+  name: string;
+  lightConfig: any;
 }
 
 @Injectable({

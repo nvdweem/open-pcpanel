@@ -22,6 +22,7 @@ import {ColorPickerModule} from '@iplab/ngx-color-picker';
 import {ReactiveFormsModule} from '@angular/forms';
 import {MatSliderModule} from '@angular/material/slider';
 import {MatCheckboxModule} from '@angular/material/checkbox';
+import { DeviceProfileComponent } from './device-profile/device-profile.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
     ClickableComponent,
     AnalogComponent,
     LightComponent,
+    DeviceProfileComponent,
   ],
   imports: [
     BrowserModule,

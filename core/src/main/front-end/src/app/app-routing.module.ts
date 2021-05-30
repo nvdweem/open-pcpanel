@@ -6,18 +6,21 @@ import {SelectDeviceComponent} from './select-device/select-device.component';
 import {ClickableComponent} from './config/clickable/clickable.component';
 import {AnalogComponent} from './config/analog/analog.component';
 import {LightComponent} from './config/light/light.component';
+import {DeviceProfileComponent} from './device-profile/device-profile.component';
 
 const routes: Routes = [
   {
-    path: ':device/:profile', component: DeviceComponent, children: [
-      {
-        path: ':type/:number', component: ControlConfigurationComponent, children: [
-          {path: 'click', component: ClickableComponent},
-          {path: 'analog', component: AnalogComponent},
-          {path: 'light', component: LightComponent},
-        ]
-      },
-    ]
+    path: ':device', component: DeviceProfileComponent, children: [{
+      path: ':profile', component: DeviceComponent, children: [
+        {
+          path: ':type/:number', component: ControlConfigurationComponent, children: [
+            {path: 'click', component: ClickableComponent},
+            {path: 'analog', component: AnalogComponent},
+            {path: 'light', component: LightComponent},
+          ]
+        },
+      ]
+    }],
   },
   {path: '', component: SelectDeviceComponent},
 ];

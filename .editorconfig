@@ -9,6 +9,7 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 
 [*.ts]
+# noinspection EditorConfigKeyCorrectness
 quote_type = single
 max_line_length = 500
 
@@ -18,3 +19,6 @@ max_line_length = 500
 [*.md]
 max_line_length = 500
 trim_trailing_whitespace = false
+
+[*.properties]
+ij_properties_keep_blank_lines = true

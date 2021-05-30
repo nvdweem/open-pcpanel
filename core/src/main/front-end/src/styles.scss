@@ -12,3 +12,7 @@ body {
 .w-100 {
   width: 100%;
 }
+
+.mat-list-item.active {
+  background-color: rgba(0, 0, 0, .04);
+}
