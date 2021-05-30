@@ -1,6 +1,7 @@
 package dev.niels.pcpanel.device;
 
 import dev.niels.pcpanel.device.light.LightConfig;
+import dev.niels.pcpanel.device.light.StaticLightConfig;
 import dev.niels.pcpanel.profile.Profile;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,15 +57,18 @@ public class ConnectedDevice {
     setConfig(p.getLightConfig());
   }
 
-  public ConnectedDevice setProfiles(List<Profile> profiles) {
+  public ConnectedDevice setProfiles(List<Profile> profiles, boolean changeActive) {
     this.profiles = profiles;
-    if (!profiles.isEmpty()) {
+    if (!profiles.isEmpty() && changeActive) {
       setActiveProfile(profiles.get(0));
     }
     return this;
   }
 
   public void setConfig(LightConfig config) {
+    if (config == null) {
+      config = new StaticLightConfig().setColor(Color.black);
+    }
     sendCommand(config.toCommand());
   }
 

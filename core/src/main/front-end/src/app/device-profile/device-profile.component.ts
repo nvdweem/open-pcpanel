@@ -18,8 +18,8 @@ export class DeviceProfileComponent {
 
   constructor(private http: HttpClient,
               deviceService: DeviceService,
-              router: Router,
-              route: ActivatedRoute) {
+              private router: Router,
+              private route: ActivatedRoute) {
     const newProfile$ = this.newProfile$.pipe(
       filter(n => !!n),
       switchMap(n => this.doNewProfile(n!))
@@ -50,5 +50,14 @@ export class DeviceProfileComponent {
 
   private doNewProfile(name: string): Observable<Profile[]> {
     return this.http.post<Profile[]>(`api/profile/${this.deviceId}`, {}, {params: {name}});
+  }
+
+  forceNavigate(event: MouseEvent, id: number): void {
+    this.router.navigate(['.'], {replaceUrl: false, relativeTo: this.route}).then(() => this.router.navigate([id], {relativeTo: this.route}));
+    event.preventDefault();
+  }
+
+  trackProfile(idx: number, p: Profile) {
+    return p.id;
   }
 }

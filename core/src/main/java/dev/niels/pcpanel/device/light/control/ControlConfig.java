@@ -6,12 +6,11 @@ import dev.niels.pcpanel.helper.ByteArrayBuilder;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
-  @JsonSubTypes.Type(LogoBreathConfig.class),
-  @JsonSubTypes.Type(LogoRainbowConfig.class),
-  @JsonSubTypes.Type(GradientConfig.class),
-  @JsonSubTypes.Type(StaticConfig.class),
-  @JsonSubTypes.Type(EmptyConfig.class),
-  @JsonSubTypes.Type(VolumeGradientConfig.class)
+  @JsonSubTypes.Type(value = LogoBreathConfig.class, name = "breath"),
+  @JsonSubTypes.Type(value = LogoRainbowConfig.class, name = "rainbow"),
+  @JsonSubTypes.Type(value = GradientConfig.class, name = "gradient"),
+  @JsonSubTypes.Type(value = StaticConfig.class, name = "static"),
+  @JsonSubTypes.Type(value = VolumeGradientConfig.class, name = "volumeGradient")
 })
 public abstract class ControlConfig {
   private static final int COMMAND_LENGTH = 7;

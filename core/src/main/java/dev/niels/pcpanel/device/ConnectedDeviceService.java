@@ -37,9 +37,14 @@ public class ConnectedDeviceService {
   }
 
   private void deviceAdded(String deviceId, HidDevice device) {
-    var profiles = profileRepository.findByDevice(device.getSerialNumber());
+    devices.put(deviceId, updateProfiles(connectedDeviceFactory.getObject().init(device), true));
+  }
+
+  public ConnectedDevice updateProfiles(ConnectedDevice device, boolean changeActive) {
+    var profiles = profileRepository.findByDevice(device.getId());
     profiles.forEach(p -> p.init(objectMapper));
-    devices.put(deviceId, connectedDeviceFactory.getObject().init(device).setProfiles(profiles));
+    device.setProfiles(profiles, changeActive);
+    return device;
   }
 
   public Collection<ConnectedDevice> getDevices() {

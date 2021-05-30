@@ -1,6 +1,8 @@
 <div class="profiles">
   <mat-nav-list>
-    <a *ngFor="let profile of profiles$ | async" mat-list-item [routerLink]="''+profile.id" routerLinkActive #rla="routerLinkActive" [class.active]="rla.isActive">{{profile.name}}</a>
+    <a *ngFor="let profile of profiles$ | async; trackBy: trackProfile" mat-list-item [routerLink]="''+profile.id" routerLinkActive #rla="routerLinkActive" [class.active]="rla.isActive" (click)="forceNavigate($event, profile.id)">
+      {{profile.name}}
+    </a>
     <a mat-list-item (click)="newProfile()">New profile</a>
   </mat-nav-list>
 </div>

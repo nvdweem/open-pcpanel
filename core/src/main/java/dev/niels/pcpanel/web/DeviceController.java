@@ -10,7 +10,6 @@ import dev.niels.pcpanel.device.light.RainbowLightConfig;
 import dev.niels.pcpanel.device.light.StaticLightConfig;
 import dev.niels.pcpanel.device.light.WaveLightConfig;
 import dev.niels.pcpanel.device.light.control.ControlConfig;
-import dev.niels.pcpanel.device.light.control.EmptyConfig;
 import dev.niels.pcpanel.device.light.control.GradientConfig;
 import dev.niels.pcpanel.device.light.control.IControlConfig;
 import dev.niels.pcpanel.device.light.control.LogoBreathConfig;
@@ -67,7 +66,7 @@ public class DeviceController {
     var idx = lcr.getIdx() - 1;
     switch (lcr.getControl()) {
       case "knob":
-        cfg.setKnobConfig(idx, (IControlConfig.KnobControlConfig) controlConfig);
+        cfg.setKnob(idx, (IControlConfig.KnobControlConfig) controlConfig);
         break;
       case "slider":
         cfg.setSlider(idx, (IControlConfig.SliderControlConfig) controlConfig);
@@ -104,7 +103,7 @@ public class DeviceController {
       case "gradient":
         return new GradientConfig().setColor1(color1).setColor2(color2);
     }
-    return new EmptyConfig();
+    return new StaticConfig().setColors(Color.black);
   }
 
   private LightConfig buildBodyCfg(LightChangeRequest lcr) {
@@ -124,7 +123,7 @@ public class DeviceController {
   }
 
   private int hueFrom(Color clr) {
-    return (int) Math.floor(Color.RGBtoHSB(clr.getRed(), clr.getGreen(), clr.getBlue(), null)[0] * 256);
+    return clr == null ? 0 : (int) Math.floor(Color.RGBtoHSB(clr.getRed(), clr.getGreen(), clr.getBlue(), null)[0] * 256);
   }
 
   @Data

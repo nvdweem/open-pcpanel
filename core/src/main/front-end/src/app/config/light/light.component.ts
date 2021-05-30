@@ -1,12 +1,13 @@
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {debounceTime, map} from 'rxjs/operators';
+import {debounceTime, map, take} from 'rxjs/operators';
 import {combineLatest, Observable} from 'rxjs';
 import {FormControl, FormGroup} from '@angular/forms';
 import {Color, ColorPickerControl} from '@iplab/ngx-color-picker';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import {HttpClient} from '@angular/common/http';
 import {combineAllParams} from '../../../helper';
+import {DeviceService, Profile} from '../../service/device.service';
 
 interface State {
   hasWave: boolean;
@@ -33,6 +34,8 @@ export class LightComponent {
   regular2 = new ColorPickerControl().hidePresets().hideAlphaChannel();
 
   constructor(private http: HttpClient,
+              private cdr: ChangeDetectorRef,
+              deviceService: DeviceService,
               route: ActivatedRoute) {
     this.group = new FormGroup({
       device: new FormControl(),
@@ -54,6 +57,13 @@ export class LightComponent {
         device: ps.device,
         control: type,
         idx: ps.number,
+      });
+
+      deviceService.devices$.pipe(take(1)).subscribe(ds => {
+        const profile = ds.find(d => d.id === ps.device)?.profiles?.find(p => p.id === Number(ps.profile));
+        if (!profile) return;
+
+        this.getConfig(profile, type, Number(ps.number));
       });
 
       return {
@@ -110,5 +120,30 @@ export class LightComponent {
 
   set clr(_: Color) {
     // Don't care
+  }
+
+  private getConfig(profile: Profile, type: string, number: number): void {
+// @formatter:off
+    let key = '';
+    switch (type) {
+      case 'knob': key = 'knobs'; break;
+      case 'slider': key = 'sliders'; break;
+      case 'slider-label': key = 'sliderLabels'; break;
+      case 'logo': key = 'logo'; break;
+      case 'body': key =  '';
+    }
+// @formatter:on
+
+    const cfg = profile.lightConfig?.[key];
+    const patching = (number === 0 ? cfg : cfg?.[number - 1]) || {};
+
+    if (patching.type === 'gradient' && this.group.value.control === 'knob') {
+      patching.type = 'volumeGradient';
+    }
+    if (!patching.type || patching.type === 'empty') {
+      patching.type = 'static';
+    }
+    this.group.patchValue(patching);
+    this.cdr.markForCheck(); // The chrome-picker doesn't play nice with OnPush
   }
 }

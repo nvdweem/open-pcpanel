@@ -3,7 +3,6 @@ package dev.niels.pcpanel.device.light;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.niels.pcpanel.device.Device;
-import dev.niels.pcpanel.device.light.control.EmptyConfig;
 import dev.niels.pcpanel.device.light.control.GradientConfig;
 import dev.niels.pcpanel.device.light.control.LogoBreathConfig;
 import dev.niels.pcpanel.device.light.control.StaticConfig;
@@ -40,7 +39,7 @@ class JacksonLightConfigTest {
 
   @Test
   void testCustom() throws JsonProcessingException {
-    var customCfg = CustomLightConfig.build(Device.PCPANEL_PRO).setKnobConfig(0, new EmptyConfig()).setKnobConfig(1, new GradientConfig().setColor1(Color.green).setColor2(Color.red)).setKnobConfig(2, new StaticConfig().setColors(Color.red))
+    var customCfg = CustomLightConfig.build(Device.PCPANEL_PRO).setKnob(0, new StaticConfig()).setKnob(1, new GradientConfig().setColor1(Color.green).setColor2(Color.red)).setKnob(2, new StaticConfig().setColors(Color.red))
       .setSlider(0, new GradientConfig().setColor1(Color.green).setColor2(Color.red)).setSlider(1, new StaticConfig().setColors(Color.red)).setSlider(2, new VolumeGradientConfig().setColor1(Color.green).setColor2(Color.red))
       .setSliderLabel(0, new StaticConfig().setColors(Color.green)).setLogo(new LogoBreathConfig().setBrightness(1).setSpeed(2).setHue(5));
 

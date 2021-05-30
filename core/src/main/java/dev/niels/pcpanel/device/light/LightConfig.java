@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
-  @JsonSubTypes.Type(CustomLightConfig.class),
-  @JsonSubTypes.Type(BreathLightConfig.class),
-  @JsonSubTypes.Type(RainbowLightConfig.class),
-  @JsonSubTypes.Type(StaticLightConfig.class),
-  @JsonSubTypes.Type(WaveLightConfig.class)
+  @JsonSubTypes.Type(value = CustomLightConfig.class, name = "custom"),
+  @JsonSubTypes.Type(value = BreathLightConfig.class, name = "breath"),
+  @JsonSubTypes.Type(value = RainbowLightConfig.class, name = "rainbow"),
+  @JsonSubTypes.Type(value = StaticLightConfig.class, name = "static"),
+  @JsonSubTypes.Type(value = WaveLightConfig.class, name = "wave")
 })
 public abstract class LightConfig {
   public abstract byte[][] toCommand();

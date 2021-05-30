@@ -29,7 +29,7 @@ public @interface JsonColor {
     }
 
     @Override public void serialize(Color value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-      gen.writeString(String.format("#%06x", value.getRGB() & 0x00FFFFFF));
+      gen.writeString(String.format("#%06X", value.getRGB() & 0x00FFFFFF));
     }
   }
 

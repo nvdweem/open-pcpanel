@@ -2,7 +2,6 @@ package dev.niels.pcpanel.device.light;
 
 import dev.niels.pcpanel.device.Device;
 import dev.niels.pcpanel.device.light.control.ControlConfig;
-import dev.niels.pcpanel.device.light.control.EmptyConfig;
 import dev.niels.pcpanel.device.light.control.IControlConfig;
 import dev.niels.pcpanel.device.light.control.StaticConfig;
 import dev.niels.pcpanel.helper.ByteArrayBuilder;
@@ -16,7 +15,7 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class CustomLightConfig extends LightConfig {
-  private List<ControlConfig> knobConfigs = new ArrayList<>();
+  private List<ControlConfig> knobs = new ArrayList<>();
   private List<ControlConfig> sliderLabels = new ArrayList<>();
   private List<ControlConfig> sliders = new ArrayList<>();
   private ControlConfig logo;
@@ -26,14 +25,14 @@ public class CustomLightConfig extends LightConfig {
     int sliders = device.getAnalogCount() - knobs;
 
     return new CustomLightConfig()
-      .setKnobConfigs(IntStreamEx.range(knobs).mapToObj(x -> new EmptyConfig()).select(ControlConfig.class).toList())
-      .setSliderLabels(IntStreamEx.range(sliders).mapToObj(x -> new EmptyConfig()).select(ControlConfig.class).toList())
-      .setSliders(IntStreamEx.range(sliders).mapToObj(x -> new EmptyConfig()).select(ControlConfig.class).toList())
-      .setLogo(new EmptyConfig());
+      .setKnobs(IntStreamEx.range(knobs).mapToObj(x -> new StaticConfig()).select(ControlConfig.class).toList())
+      .setSliderLabels(IntStreamEx.range(sliders).mapToObj(x -> new StaticConfig()).select(ControlConfig.class).toList())
+      .setSliders(IntStreamEx.range(sliders).mapToObj(x -> new StaticConfig()).select(ControlConfig.class).toList())
+      .setLogo(new StaticConfig());
   }
 
-  public CustomLightConfig setKnobConfig(int idx, IControlConfig.KnobControlConfig config) {
-    knobConfigs.set(idx, config.toConfig());
+  public CustomLightConfig setKnob(int idx, IControlConfig.KnobControlConfig config) {
+    knobs.set(idx, config.toConfig());
     return this;
   }
 
@@ -50,7 +49,7 @@ public class CustomLightConfig extends LightConfig {
   @Override
   public byte[][] toCommand() {
     return new byte[][]{
-      addAll(knobConfigs, 5, 2),
+      addAll(knobs, 5, 2),
       addAll(sliderLabels, 5, 1),
       addAll(sliders, 5, 0),
       addAll(List.of(logo), 5, 3),

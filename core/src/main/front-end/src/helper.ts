@@ -2,7 +2,7 @@ import {ActivatedRoute, ParamMap, Params} from '@angular/router';
 import {combineLatest, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
-export function combineAllParams(route: ActivatedRoute | null): Observable<Params> {
+export function combineAllParams(route: ActivatedRoute | null): Observable<{ [key: string]: string; }> {
   const paramMaps: Observable<ParamMap>[] = [];
   while (route) {
     paramMaps.push(route.paramMap);

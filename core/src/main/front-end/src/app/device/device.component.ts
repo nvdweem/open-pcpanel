@@ -3,6 +3,7 @@ import {HttpClient} from '@angular/common/http';
 import {ActivatedRoute} from '@angular/router';
 import {combineAllParams} from '../../helper';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
+import {DeviceService} from '../service/device.service';
 
 @UntilDestroy()
 @Component({
@@ -15,9 +16,12 @@ export class DeviceComponent {
   private device = '';
 
   constructor(private http: HttpClient,
+              deviceService: DeviceService,
               route: ActivatedRoute) {
     combineAllParams(route).pipe(untilDestroyed(this)).subscribe(pm => {
       this.device = pm.device;
+      http.put(`api/profile/${pm.device}/${pm.profile}`, {}).subscribe();
+      deviceService.reload();
     });
   }
 
