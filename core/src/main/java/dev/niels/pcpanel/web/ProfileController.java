@@ -1,5 +1,6 @@
 package dev.niels.pcpanel.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.niels.pcpanel.device.ConnectedDeviceService;
 import dev.niels.pcpanel.profile.Profile;
 import dev.niels.pcpanel.profile.ProfileRepository;
@@ -21,6 +22,7 @@ import java.util.List;
 public class ProfileController {
   private final ConnectedDeviceService deviceService;
   private final ProfileRepository profileRepository;
+  private final ObjectMapper objectMapper;
 
   @Transactional
   @PostMapping("profile/{deviceId}")
@@ -30,5 +32,13 @@ public class ProfileController {
     device.getProfiles().add(profileRepository.save(newProfile));
 
     return device.getProfiles();
+  }
+
+  @Transactional
+  @PostMapping("profile/{deviceId}/save")
+  public boolean save(@PathVariable String deviceId) {
+    var device = deviceService.getDevice(deviceId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
+    device.setActiveProfile(profileRepository.save(device.getActiveProfile().prepareForSave(objectMapper)).init(objectMapper));
+    return true;
   }
 }

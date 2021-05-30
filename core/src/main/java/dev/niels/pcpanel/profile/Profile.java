@@ -1,6 +1,7 @@
 package dev.niels.pcpanel.profile;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.niels.pcpanel.device.light.LightConfig;
 import dev.niels.pcpanel.device.light.StaticLightConfig;
@@ -36,12 +37,22 @@ public class Profile {
 
   @Transient private LightConfig lightConfig;
 
-  public void init(ObjectMapper mapper) {
+  public Profile init(ObjectMapper mapper) {
     try {
       lightConfig = mapper.readValue(lights, LightConfig.class);
     } catch (Exception e) {
       log.warn("Unable to read light config: {}", lights);
       lightConfig = new StaticLightConfig().setColor(Color.black);
     }
+    return this;
+  }
+
+  public Profile prepareForSave(ObjectMapper objectMapper) {
+    try {
+      this.lights = objectMapper.writeValueAsString(lightConfig);
+    } catch (JsonProcessingException e) {
+      log.error("Unable to prepare {} for saving", this);
+    }
+    return this;
   }
 }

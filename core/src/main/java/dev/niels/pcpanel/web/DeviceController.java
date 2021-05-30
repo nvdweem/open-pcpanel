@@ -46,7 +46,7 @@ public class DeviceController {
     var device = deviceService.getDevice(lcr.getDevice()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
 
     if (lcr.control.equals("body")) {
-      device.setConfig(buildBodyCfg(lcr));
+      device.setActiveProfile(device.getActiveProfile().setLightConfig(buildBodyCfg(lcr)));
     } else {
       setControlLight(device, lcr);
     }
@@ -55,9 +55,15 @@ public class DeviceController {
   }
 
   private void setControlLight(ConnectedDevice device, LightChangeRequest lcr) {
-    var cfg = CustomLightConfig.build(device.getType());
-    var controlConfig = buildCfg(lcr);
+    var profile = device.getActiveProfile();
+    var currentConfig = profile.getLightConfig();
+    if (!(currentConfig instanceof CustomLightConfig)) {
+      currentConfig = CustomLightConfig.build(device.getType());
+      profile.setLightConfig(currentConfig);
+    }
+    var cfg = (CustomLightConfig) currentConfig;
 
+    var controlConfig = buildCfg(lcr);
     var idx = lcr.getIdx() - 1;
     switch (lcr.getControl()) {
       case "knob":
@@ -74,7 +80,7 @@ public class DeviceController {
         break;
     }
 
-    device.setConfig(cfg);
+    device.setActiveProfile(profile);
   }
 
   private ControlConfig buildCfg(LightChangeRequest lcr) {

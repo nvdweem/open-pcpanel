@@ -4,7 +4,6 @@ import dev.niels.pcpanel.device.light.LightConfig;
 import dev.niels.pcpanel.profile.Profile;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import one.util.streamex.StreamEx;
 import org.hid4java.HidDevice;
@@ -31,7 +30,8 @@ public class ConnectedDevice {
   @Getter private final List<Integer> states = new ArrayList<>();
   @Getter private Device type;
   @Getter private String id;
-  @Getter @Setter private List<Profile> profiles;
+  @Getter private List<Profile> profiles;
+  @Getter private Profile activeProfile;
 
   public ConnectedDevice init(HidDevice device) {
     this.device = device;
@@ -48,6 +48,19 @@ public class ConnectedDevice {
     for (int i = 0; i < device.getAnalogCount(); i++) {
       states.add(0);
     }
+  }
+
+  public void setActiveProfile(Profile p) {
+    activeProfile = p;
+    setConfig(p.getLightConfig());
+  }
+
+  public ConnectedDevice setProfiles(List<Profile> profiles) {
+    this.profiles = profiles;
+    if (!profiles.isEmpty()) {
+      setActiveProfile(profiles.get(0));
+    }
+    return this;
   }
 
   public void setConfig(LightConfig config) {
