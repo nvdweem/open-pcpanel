@@ -1,5 +1,6 @@
 package dev.niels.pcpanel.web;
 
+import dev.niels.pcpanel.JsonColor;
 import dev.niels.pcpanel.device.ConnectedDevice;
 import dev.niels.pcpanel.device.ConnectedDeviceService;
 import dev.niels.pcpanel.device.light.BreathLightConfig;
@@ -20,7 +21,6 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,13 +29,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.awt.Color;
 import java.util.Collection;
-import java.util.regex.Pattern;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 public class DeviceController {
-  private static final Pattern rgbPattern = Pattern.compile("rgb\\((\\d+), (\\d+), (\\d+)\\)");
   private final ConnectedDeviceService deviceService;
 
   @GetMapping("devices")
@@ -72,7 +70,7 @@ public class DeviceController {
         cfg.setSliderLabel(idx, (StaticConfig) controlConfig);
         break;
       case "logo":
-        cfg.setLogo((IControlConfig.LogoControlConfig) controlConfig);
+        cfg.setLogo(controlConfig);
         break;
     }
 
@@ -80,8 +78,8 @@ public class DeviceController {
   }
 
   private ControlConfig buildCfg(LightChangeRequest lcr) {
-    var color1 = parseColor(lcr.getColor1());
-    var color2 = parseColor(lcr.getColor2());
+    var color1 = lcr.getColor1();
+    var color2 = lcr.getColor2();
     switch (lcr.getType()) {
       case "static":
         return new StaticConfig().setColors(color1);
@@ -104,7 +102,7 @@ public class DeviceController {
   }
 
   private LightConfig buildBodyCfg(LightChangeRequest lcr) {
-    var color = parseColor(lcr.getColor1());
+    var color = lcr.getColor1();
     switch (lcr.type) {
       case "static":
         return new StaticLightConfig().setColor(color);
@@ -123,30 +121,14 @@ public class DeviceController {
     return (int) Math.floor(Color.RGBtoHSB(clr.getRed(), clr.getGreen(), clr.getBlue(), null)[0] * 256);
   }
 
-
-  private Color parseColor(String color) {
-    if (StringUtils.hasText(color)) {
-      var m = rgbPattern.matcher(color);
-      if (m.find()) {
-        return new Color(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3)));
-      }
-      try {
-        return Color.decode(color);
-      } catch (Exception e) {
-        // Not rgb
-      }
-    }
-    return Color.white;
-  }
-
   @Data
   public static class LightChangeRequest {
     private String device;
     private String control;
     private int idx;
     private String type;
-    private String color1;
-    private String color2;
+    @JsonColor private Color color1;
+    @JsonColor private Color color2;
     private int brightness;
     private int speed;
     private int phaseShift;

@@ -1,6 +1,7 @@
 package dev.niels.pcpanel.device.light;
 
 import dev.niels.pcpanel.device.Device;
+import dev.niels.pcpanel.device.light.control.ControlConfig;
 import dev.niels.pcpanel.device.light.control.EmptyConfig;
 import dev.niels.pcpanel.device.light.control.IControlConfig;
 import dev.niels.pcpanel.device.light.control.StaticConfig;
@@ -15,50 +16,50 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class CustomLightConfig extends LightConfig {
-    private List<IControlConfig.KnobControlConfig> knobConfigs = new ArrayList<>();
-    private List<IControlConfig> sliderLabels = new ArrayList<>();
-    private List<IControlConfig.SliderControlConfig> sliders = new ArrayList<>();
-    private IControlConfig.LogoControlConfig logo;
+  private List<ControlConfig> knobConfigs = new ArrayList<>();
+  private List<ControlConfig> sliderLabels = new ArrayList<>();
+  private List<ControlConfig> sliders = new ArrayList<>();
+  private ControlConfig logo;
 
-    public static CustomLightConfig build(Device device) {
-        int knobs = device.getButtonCount();
-        int sliders = device.getAnalogCount() - knobs;
+  public static CustomLightConfig build(Device device) {
+    int knobs = device.getButtonCount();
+    int sliders = device.getAnalogCount() - knobs;
 
-        return new CustomLightConfig()
-                .setKnobConfigs(IntStreamEx.range(knobs).mapToObj(x -> new EmptyConfig()).select(IControlConfig.KnobControlConfig.class).toList())
-                .setSliderLabels(IntStreamEx.range(sliders).mapToObj(x -> new EmptyConfig()).select(IControlConfig.class).toList())
-                .setSliders(IntStreamEx.range(sliders).mapToObj(x -> new EmptyConfig()).select(IControlConfig.SliderControlConfig.class).toList())
-                .setLogo(new EmptyConfig());
-    }
+    return new CustomLightConfig()
+      .setKnobConfigs(IntStreamEx.range(knobs).mapToObj(x -> new EmptyConfig()).select(ControlConfig.class).toList())
+      .setSliderLabels(IntStreamEx.range(sliders).mapToObj(x -> new EmptyConfig()).select(ControlConfig.class).toList())
+      .setSliders(IntStreamEx.range(sliders).mapToObj(x -> new EmptyConfig()).select(ControlConfig.class).toList())
+      .setLogo(new EmptyConfig());
+  }
 
-    public CustomLightConfig setKnobConfig(int idx, IControlConfig.KnobControlConfig config) {
-        knobConfigs.set(idx, config);
-        return this;
-    }
+  public CustomLightConfig setKnobConfig(int idx, IControlConfig.KnobControlConfig config) {
+    knobConfigs.set(idx, config.toConfig());
+    return this;
+  }
 
-    public CustomLightConfig setSliderLabel(int idx, StaticConfig config) {
-        sliderLabels.set(idx, config);
-        return this;
-    }
+  public CustomLightConfig setSliderLabel(int idx, StaticConfig config) {
+    sliderLabels.set(idx, config);
+    return this;
+  }
 
-    public CustomLightConfig setSlider(int idx, IControlConfig.SliderControlConfig config) {
-        sliders.set(idx, config);
-        return this;
-    }
+  public CustomLightConfig setSlider(int idx, IControlConfig.SliderControlConfig config) {
+    sliders.set(idx, config.toConfig());
+    return this;
+  }
 
-    @Override
-    public byte[][] toCommand() {
-        return new byte[][]{
-                addAll(knobConfigs, 5, 2),
-                addAll(sliderLabels, 5, 1),
-                addAll(sliders, 5, 0),
-                addAll(List.of(logo), 5, 3),
-        };
-    }
+  @Override
+  public byte[][] toCommand() {
+    return new byte[][]{
+      addAll(knobConfigs, 5, 2),
+      addAll(sliderLabels, 5, 1),
+      addAll(sliders, 5, 0),
+      addAll(List.of(logo), 5, 3),
+    };
+  }
 
-    private <T extends IControlConfig> byte[] addAll(List<T> cfgs, int... prefix) {
-        var bab = new ByteArrayBuilder(prefix);
-        cfgs.forEach(c -> c.appendToBuilder(bab));
-        return bab.getBytes();
-    }
+  private byte[] addAll(List<ControlConfig> cfgs, int... prefix) {
+    var bab = new ByteArrayBuilder(prefix);
+    cfgs.forEach(c -> c.appendToBuilder(bab));
+    return bab.getBytes();
+  }
 }
