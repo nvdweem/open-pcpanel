@@ -1,1 +1,9 @@
-<p>analog works!</p>
+<div class="flex-static">
+  <mat-nav-list>
+    <a *ngFor="let action of actionsService.analog | async" mat-list-item [class.active]="selected === action" (click)="selected = action">{{action.name}}</a>
+  </mat-nav-list>
+</div>
+<mat-divider vertical></mat-divider>
+<div class="flex-grow">
+  <pcp-config-panel *ngIf="selected" [action]="selected" (configChanged)="toUpdate.next($event)"></pcp-config-panel>
+</div>

@@ -1,0 +1,28 @@
+<div *ngFor="let elem of action.configElements" [formGroup]="group">
+  <ng-container [ngSwitch]="elem.type">
+    <div *ngSwitchDefault>Unknown type {{elem.type}}</div>
+    <mat-form-field *ngSwitchCase="'textField'">
+      <mat-label>{{elem.label}}</mat-label>
+      <input [formControlName]="elem.name" matInput>
+    </mat-form-field>
+
+    <mat-form-field *ngSwitchCase="'textArea'">
+      <mat-label>{{elem.label}}</mat-label>
+      <textarea [formControlName]="elem.name" matInput></textarea>
+    </mat-form-field>
+
+    <div *ngSwitchCase="'slider'">
+      <mat-label>{{elem.label}}</mat-label>
+      <mat-slider [formControlName]="elem.name" (input)="patch(elem.name, $event.value)" class="w-100"></mat-slider>
+    </div>
+
+    <mat-form-field *ngSwitchCase="'filePicker'">
+      <mat-label>{{elem.label}}</mat-label>
+      <input [formControlName]="elem.name" matInput>
+    </mat-form-field>
+
+    <div *ngSwitchCase="'label'">
+      <mat-label>{{elem.label}}</mat-label>
+    </div>
+  </ng-container>
+</div>

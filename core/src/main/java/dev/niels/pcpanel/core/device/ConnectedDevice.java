@@ -41,7 +41,7 @@ public class ConnectedDevice {
     init(Device.getPanelType(device).orElseThrow(() -> new IllegalArgumentException("Init called for non-PCPanel device")));
     log.info("Device connected! {}", device);
 
-    new Thread(this::run).start();
+    new Thread(this::run, "Device|" + this.id).start();
     return this;
   }
 

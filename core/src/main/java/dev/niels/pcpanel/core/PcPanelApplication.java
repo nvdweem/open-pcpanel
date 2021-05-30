@@ -5,7 +5,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"dev.niels", "pcpanel"})
 public class PcPanelApplication {
   public static void main(String[] args) {
     new SpringApplicationBuilder(PcPanelApplication.class)

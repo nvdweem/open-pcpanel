@@ -6,15 +6,9 @@ pluginManagement {
 }
 rootProject.name = 'open-pcpanel'
 
-allprojects {
-  group = 'dev.niels'
-  version = '1.0.0-SNAPSHOT'
-  sourceCompatibility = '11'
-}
-
 include 'winsndctrl'
 include 'core'
 include 'applicationstarter'
-include 'volumecontrol'
+include 'plugin'
 include 'volumecontrol'
 

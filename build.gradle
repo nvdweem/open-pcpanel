@@ -1,0 +1,4 @@
+allprojects {
+  group = 'dev.niels'
+  version = '1.0.0-SNAPSHOT'
+}

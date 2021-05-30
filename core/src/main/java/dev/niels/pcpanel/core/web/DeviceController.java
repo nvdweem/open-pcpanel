@@ -28,6 +28,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.awt.Color;
 import java.util.Collection;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -50,6 +51,12 @@ public class DeviceController {
       setControlLight(device, lcr);
     }
 
+    return true;
+  }
+
+  @PostMapping("changeanalog")
+  public boolean changeAnalog(@RequestBody AnalogRequest ar) {
+    System.out.println(ar);
     return true;
   }
 
@@ -139,5 +146,13 @@ public class DeviceController {
     private int phaseShift;
     private boolean reverse;
     private boolean bounce;
+  }
+
+  @Data
+  public static class AnalogRequest {
+    private String device;
+    private String control;
+    private int idx;
+    private Map<String, String> params;
   }
 }

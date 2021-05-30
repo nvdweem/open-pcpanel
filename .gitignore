@@ -8,7 +8,8 @@ build/
 /sndctrl++/.vs/
 /sndctrl++/Debug/
 /sndctrl++/x64/
-/core/src/main/resources/SndCtrl.dll
 /core/src/main/resources/public/
 /core/src/main/resources/application-default.properties
 /settings.mv.db
+/settings.trace.db
+/volumecontrol/src/main/resources/SndCtrl.dll

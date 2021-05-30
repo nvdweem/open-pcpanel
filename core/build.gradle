@@ -5,6 +5,7 @@ plugins {
   id "io.freefair.lombok" version "6.0.0-m2"
   id "com.moowork.node" version "1.3.1"
 }
+sourceCompatibility = '11'
 
 repositories {
   maven { url 'https://repo.spring.io/snapshot' }
@@ -22,6 +23,9 @@ dependencies {
   implementation group: 'net.java.dev.jna', name: 'jna', version: '5.8.0'
 
   runtimeOnly 'com.h2database:h2'
+
+  implementation project(':plugin')
+  implementation project(':volumecontrol')
 }
 
 test {
