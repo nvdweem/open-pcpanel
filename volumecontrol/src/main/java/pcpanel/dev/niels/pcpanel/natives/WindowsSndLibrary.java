@@ -1,4 +1,4 @@
-package dev.niels.pcpanel.core.volume;
+package pcpanel.dev.niels.pcpanel.natives;
 
 import com.sun.jna.Callback;
 import com.sun.jna.Library;

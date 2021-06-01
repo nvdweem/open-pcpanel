@@ -46,7 +46,7 @@ public class ProfileController {
   public boolean save(@PathVariable String deviceId) {
     var device = deviceService.getDevice(deviceId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
     profileRepository.save(device.getActiveProfile().prepareForSave(objectMapper));
-    deviceService.updateProfiles(device, false);
+    deviceService.updateProfiles(device);
     return true;
   }
 

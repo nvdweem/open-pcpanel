@@ -16,9 +16,12 @@ import dev.niels.pcpanel.core.device.light.control.LogoBreathConfig;
 import dev.niels.pcpanel.core.device.light.control.LogoRainbowConfig;
 import dev.niels.pcpanel.core.device.light.control.StaticConfig;
 import dev.niels.pcpanel.core.device.light.control.VolumeGradientConfig;
+import dev.niels.pcpanel.plugins.AnalogAction;
+import dev.niels.pcpanel.plugins.config.ActionConfig;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +32,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.awt.Color;
 import java.util.Collection;
 import java.util.Map;
+
+import static org.springframework.util.ReflectionUtils.doWithFields;
 
 @Slf4j
 @RestController
@@ -55,8 +60,20 @@ public class DeviceController {
   }
 
   @PostMapping("changeanalog")
-  public boolean changeAnalog(@RequestBody AnalogRequest ar) {
-    System.out.println(ar);
+  public boolean changeAnalog(@RequestBody AnalogRequest ar) throws Exception {
+    var device = deviceService.getDevice(ar.getDevice()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
+
+    var aa = (AnalogAction) Class.forName((String) ar.getParams().get("__type")).getConstructor().newInstance();
+    var obj = aa.getConfigurationClass().getConstructor().newInstance();
+    doWithFields(aa.getConfigurationClass(), f -> {
+      var value = ar.getParams().get(f.getName());
+      if (value != null) {
+        ReflectionUtils.setField(f, obj, value);
+      }
+    });
+
+    var idx = ar.getIdx() - 1 + (ar.getControl().equals("slider") ? device.getType().getButtonCount() : 0);
+    device.getActiveProfile().getActionsConfig().setAnalogAction(idx, (ActionConfig) obj);
     return true;
   }
 
@@ -153,6 +170,6 @@ public class DeviceController {
     private String device;
     private String control;
     private int idx;
-    private Map<String, String> params;
+    private Map<String, Object> params;
   }
 }

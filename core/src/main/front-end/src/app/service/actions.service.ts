@@ -9,14 +9,12 @@ export interface AllActions {
 
 export interface AnalogAction {
   name: string;
-  configElements: ConfigElement[];
+  elements: ConfigElement[];
   impl: string;
 }
 
 export interface ConfigElement {
-  name: string;
-  label: string;
-  type: 'textField' | 'textArea' | 'slider' | 'filePicker';
+  [key: string]: any;
 }
 
 @Injectable({

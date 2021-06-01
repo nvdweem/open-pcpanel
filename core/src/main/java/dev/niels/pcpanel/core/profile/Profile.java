@@ -35,11 +35,18 @@ public class Profile {
   @JsonIgnore
   private String lights;
 
+  @Lob
+  @Column
+  @JsonIgnore
+  private String actions;
+
   @Transient private LightConfig lightConfig;
+  @Transient private Actions actionsConfig;
 
   public Profile init(ObjectMapper mapper) {
     try {
       lightConfig = mapper.readValue(lights, LightConfig.class);
+      actionsConfig = mapper.readValue(actions, Actions.class);
     } catch (Exception e) {
       log.warn("Unable to read light config: {}", lights);
       lightConfig = new StaticLightConfig().setColor(Color.black);
@@ -49,7 +56,8 @@ public class Profile {
 
   public Profile prepareForSave(ObjectMapper objectMapper) {
     try {
-      this.lights = objectMapper.writeValueAsString(lightConfig);
+      lights = objectMapper.writeValueAsString(lightConfig);
+      actions = objectMapper.writeValueAsString(actionsConfig);
     } catch (JsonProcessingException e) {
       log.error("Unable to prepare {} for saving", this);
     }

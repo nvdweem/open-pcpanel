@@ -80,7 +80,7 @@ private:
 public:
   SessionListener(CComPtr<IAudioSessionManager2> sessionManager, wstring deviceId) : sessionManager(sessionManager), deviceId(deviceId) {}
 
-  HRESULT OnSessionCreated(IAudioSessionControl* pNewSession);
+  HRESULT STDMETHODCALLTYPE OnSessionCreated(IAudioSessionControl* pNewSession);
 
   HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppv) override { return Listener::QueryInterface(riid, ppv); }
   ULONG STDMETHODCALLTYPE AddRef() override { return Listener::AddRef(); }

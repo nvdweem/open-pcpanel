@@ -23,9 +23,13 @@ export class ConfigPanelComponent {
 
   private buildControl(): void {
     const controls: { [key: string]: AbstractControl; } = {};
+
     controls.__type = new FormControl(this._action.impl);
-    for (let ce of this._action.configElements) {
-      controls[ce.name] = new FormControl();
+    for (let ce of this._action.elements) {
+      const name = (ce as any).name;
+      if (name) {
+        controls[name] = new FormControl();
+      }
     }
     this.group = new FormGroup(controls);
 

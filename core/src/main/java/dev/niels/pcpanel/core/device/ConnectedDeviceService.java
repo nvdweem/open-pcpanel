@@ -1,6 +1,7 @@
 package dev.niels.pcpanel.core.device;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.niels.pcpanel.core.profile.Actions;
 import dev.niels.pcpanel.core.profile.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,13 +38,18 @@ public class ConnectedDeviceService {
   }
 
   private void deviceAdded(String deviceId, HidDevice device) {
-    devices.put(deviceId, updateProfiles(connectedDeviceFactory.getObject().init(device), true));
+    devices.put(deviceId, updateProfiles(connectedDeviceFactory.getObject().init(device)).start());
   }
 
-  public ConnectedDevice updateProfiles(ConnectedDevice device, boolean changeActive) {
+  public ConnectedDevice updateProfiles(ConnectedDevice device) {
     var profiles = profileRepository.findByDevice(device.getId());
-    profiles.forEach(p -> p.init(objectMapper));
-    device.setProfiles(profiles, changeActive);
+    profiles.forEach(p -> {
+      p.init(objectMapper);
+      if (p.getActionsConfig() == null) {
+        p.setActionsConfig(Actions.forDevice(device.getType()));
+      }
+    });
+    device.setProfiles(profiles);
     return device;
   }
 

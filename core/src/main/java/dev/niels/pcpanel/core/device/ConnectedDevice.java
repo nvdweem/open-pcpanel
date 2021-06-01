@@ -5,6 +5,7 @@ import dev.niels.pcpanel.core.device.light.StaticLightConfig;
 import dev.niels.pcpanel.core.profile.Profile;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import one.util.streamex.StreamEx;
 import org.hid4java.HidDevice;
@@ -32,7 +33,7 @@ public class ConnectedDevice {
   @Getter private final List<Integer> states = new ArrayList<>();
   @Getter private Device type;
   @Getter private String id;
-  @Getter private List<Profile> profiles;
+  @Getter @Setter private List<Profile> profiles;
   @Getter private Profile activeProfile;
 
   public ConnectedDevice init(HidDevice device) {
@@ -40,7 +41,10 @@ public class ConnectedDevice {
     this.id = device.getSerialNumber();
     init(Device.getPanelType(device).orElseThrow(() -> new IllegalArgumentException("Init called for non-PCPanel device")));
     log.info("Device connected! {}", device);
+    return this;
+  }
 
+  public ConnectedDevice start() {
     new Thread(this::run, "Device|" + this.id).start();
     return this;
   }
@@ -55,14 +59,6 @@ public class ConnectedDevice {
   public void setActiveProfile(Profile p) {
     activeProfile = p;
     setConfig(p.getLightConfig());
-  }
-
-  public ConnectedDevice setProfiles(List<Profile> profiles, boolean changeActive) {
-    this.profiles = profiles;
-    if (!profiles.isEmpty() && changeActive) {
-      setActiveProfile(profiles.get(0));
-    }
-    return this;
   }
 
   public void setConfig(LightConfig config) {
@@ -89,6 +85,10 @@ public class ConnectedDevice {
       log.error("Unable to open {}", device);
       return;
     }
+    if (!profiles.isEmpty()) {
+      setActiveProfile(profiles.get(0));
+    }
+
     device.setNonBlocking(false);
     sendCommand(new byte[]{1});
 

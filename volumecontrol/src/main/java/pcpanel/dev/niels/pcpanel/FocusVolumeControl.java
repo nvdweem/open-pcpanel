@@ -1,23 +1,26 @@
 package pcpanel.dev.niels.pcpanel;
 
 import dev.niels.pcpanel.plugins.AnalogAction;
-import dev.niels.pcpanel.plugins.config.ConfigElementType;
-import dev.niels.pcpanel.plugins.config.ConfigPageBuilder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RestController;
+import pcpanel.dev.niels.pcpanel.natives.VolumeControlService;
 
-import java.util.List;
-
-@RestController
 @Component
-public class FocusVolumeControl implements AnalogAction {
+@RestController
+@RequiredArgsConstructor
+public class FocusVolumeControl implements AnalogAction<FocusVolumeConfig> {
+  private final VolumeControlService vcService;
+
   @Override public String getName() {
     return "Focus volume";
   }
 
-  @Override public List<ConfigPageBuilder.ConfigElement> getConfigElements() {
-    return new ConfigPageBuilder()
-      .addElement("label", "Nothing to configure, changing this control will change the focused volume.", ConfigElementType.label)
-      .getConfigElements();
+  @Override public Class<FocusVolumeConfig> getConfigurationClass() {
+    return FocusVolumeConfig.class;
+  }
+
+  @Override public void triggerAction(FocusVolumeConfig config, int sliderPos) {
+    vcService.setFgVolume(Math.round((sliderPos / 255f) * 100), true);
   }
 }

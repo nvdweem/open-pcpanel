@@ -127,14 +127,28 @@ void setProcessVolume(const LPWSTR name, int volume, bool osd) {
   }
 }
 
+wstring GetProcessName(DWORD procId) {
+  DWORD buffSize = MAX_PATH;
+  WCHAR buffer[MAX_PATH] = { 0 };
+  HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, procId);
+  QueryFullProcessImageNameW(hProc, NULL, buffer, &buffSize);
+  CloseHandle(hProc);
+  return wstring(buffer);
+}
+
 void setFgProcessVolume(int volume, bool osd) {
   DWORD procId;
   GetWindowThreadProcessId(GetForegroundWindow(), &procId);
+  auto name = GetProcessName(procId);
 
-  if (pid2control.find(procId) != pid2control.end()) {
-    CComQIPtr<ISimpleAudioVolume> cc = pid2control[procId].p;
-    if (cc) {
-      cc->SetMasterVolume(volume / 100.0f, nullptr);
+  auto found = name2control.find(name);
+  if (found != name2control.end()) {
+    auto ps = *found;
+    for (auto& ctrl : ps.second) {
+      CComQIPtr<ISimpleAudioVolume> cc(ctrl.p);
+      if (cc) {
+        cc->SetMasterVolume(volume / 100.0f, nullptr);
+      }
     }
   }
 }
