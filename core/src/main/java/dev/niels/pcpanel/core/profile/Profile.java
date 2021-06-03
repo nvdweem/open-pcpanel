@@ -7,6 +7,7 @@ import dev.niels.pcpanel.core.device.light.LightConfig;
 import dev.niels.pcpanel.core.device.light.StaticLightConfig;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Transient;
 import java.awt.Color;
+import java.util.function.Supplier;
 
 @Data
 @Slf4j
@@ -44,13 +46,8 @@ public class Profile {
   @Transient private Actions actionsConfig;
 
   public Profile init(ObjectMapper mapper) {
-    try {
-      lightConfig = mapper.readValue(lights, LightConfig.class);
-      actionsConfig = mapper.readValue(actions, Actions.class);
-    } catch (Exception e) {
-      log.warn("Unable to read light config: {}", lights);
-      lightConfig = new StaticLightConfig().setColor(Color.black);
-    }
+    lightConfig = tryParse(mapper, lights, LightConfig.class, () -> new StaticLightConfig().setColor(Color.black));
+    actionsConfig = tryParse(mapper, actions, Actions.class, () -> null);
     return this;
   }
 
@@ -62,5 +59,16 @@ public class Profile {
       log.error("Unable to prepare {} for saving", this);
     }
     return this;
+  }
+
+  private <T> T tryParse(ObjectMapper mapper, String input, Class<T> clazz, Supplier<T> def) {
+    if (StringUtils.hasText(input)) {
+      try {
+        return mapper.readValue(input, clazz);
+      } catch (Exception e) {
+        log.warn("Unable to read light config: {}", input);
+      }
+    }
+    return null;
   }
 }

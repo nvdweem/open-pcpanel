@@ -21,6 +21,6 @@ public class FocusVolumeControl implements AnalogAction<FocusVolumeConfig> {
   }
 
   @Override public void triggerAction(FocusVolumeConfig config, int sliderPos) {
-    vcService.setFgVolume(Math.round((sliderPos / 255f) * 100), true);
+    vcService.setFgVolume(Math.round((sliderPos / 255f) * 100), config.isOsd());
   }
 }

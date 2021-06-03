@@ -1,6 +1,7 @@
 package dev.niels.pcpanel.core.web;
 
 import dev.niels.pcpanel.core.JsonColor;
+import dev.niels.pcpanel.core.SpringContext;
 import dev.niels.pcpanel.core.device.ConnectedDevice;
 import dev.niels.pcpanel.core.device.ConnectedDeviceService;
 import dev.niels.pcpanel.core.device.light.BreathLightConfig;
@@ -39,137 +40,137 @@ import static org.springframework.util.ReflectionUtils.doWithFields;
 @RestController
 @RequiredArgsConstructor
 public class DeviceController {
-  private final ConnectedDeviceService deviceService;
+    private final ConnectedDeviceService deviceService;
 
-  @GetMapping("devices")
-  public Collection<ConnectedDevice> getConnectedDevices() {
-    return deviceService.getDevices();
-  }
-
-  @PostMapping("changelight")
-  public boolean changeLight(@RequestBody LightChangeRequest lcr) {
-    var device = deviceService.getDevice(lcr.getDevice()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
-
-    if (lcr.control.equals("body")) {
-      device.setActiveProfile(device.getActiveProfile().setLightConfig(buildBodyCfg(lcr)));
-    } else {
-      setControlLight(device, lcr);
+    @GetMapping("devices")
+    public Collection<ConnectedDevice> getConnectedDevices() {
+        return deviceService.getDevices();
     }
 
-    return true;
-  }
+    @PostMapping("changelight")
+    public boolean changeLight(@RequestBody LightChangeRequest lcr) {
+        var device = deviceService.getDevice(lcr.getDevice()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
 
-  @PostMapping("changeanalog")
-  public boolean changeAnalog(@RequestBody AnalogRequest ar) throws Exception {
-    var device = deviceService.getDevice(ar.getDevice()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
-
-    var aa = (AnalogAction) Class.forName((String) ar.getParams().get("__type")).getConstructor().newInstance();
-    var obj = aa.getConfigurationClass().getConstructor().newInstance();
-    doWithFields(aa.getConfigurationClass(), f -> {
-      var value = ar.getParams().get(f.getName());
-      if (value != null) {
-        ReflectionUtils.setField(f, obj, value);
-      }
-    });
-
-    var idx = ar.getIdx() - 1 + (ar.getControl().equals("slider") ? device.getType().getButtonCount() : 0);
-    device.getActiveProfile().getActionsConfig().setAnalogAction(idx, (ActionConfig) obj);
-    return true;
-  }
-
-  private void setControlLight(ConnectedDevice device, LightChangeRequest lcr) {
-    var profile = device.getActiveProfile();
-    var currentConfig = profile.getLightConfig();
-    if (!(currentConfig instanceof CustomLightConfig)) {
-      currentConfig = CustomLightConfig.build(device.getType());
-      profile.setLightConfig(currentConfig);
-    }
-    var cfg = (CustomLightConfig) currentConfig;
-
-    var controlConfig = buildCfg(lcr);
-    var idx = lcr.getIdx() - 1;
-    switch (lcr.getControl()) {
-      case "knob":
-        cfg.setKnob(idx, (IControlConfig.KnobControlConfig) controlConfig);
-        break;
-      case "slider":
-        cfg.setSlider(idx, (IControlConfig.SliderControlConfig) controlConfig);
-        break;
-      case "slider-label":
-        cfg.setSliderLabel(idx, (StaticConfig) controlConfig);
-        break;
-      case "logo":
-        cfg.setLogo(controlConfig);
-        break;
-    }
-
-    device.setActiveProfile(profile);
-  }
-
-  private ControlConfig buildCfg(LightChangeRequest lcr) {
-    var color1 = lcr.getColor1();
-    var color2 = lcr.getColor2();
-    switch (lcr.getType()) {
-      case "static":
-        return new StaticConfig().setColors(color1);
-      case "wave":
-        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Wave and breath are not supported for controls");
-      case "breath":
-        return new LogoBreathConfig().setHue(hueFrom(color1)).setBrightness(lcr.getBrightness()).setSpeed(lcr.getSpeed());
-      case "rainbow":
-        return new LogoRainbowConfig().setBrightness(lcr.getBrightness()).setSpeed(lcr.getSpeed());
-      case "volumeGradient":
-        if (lcr.getControl().equals("knob")) {
-          return new GradientConfig().setColor1(color1).setColor2(color2);
+        if (lcr.control.equals("body")) {
+            device.setActiveProfile(device.getActiveProfile().setLightConfig(buildBodyCfg(lcr)));
         } else {
-          return new VolumeGradientConfig().setColor1(color1).setColor2(color2);
+            setControlLight(device, lcr);
         }
-      case "gradient":
-        return new GradientConfig().setColor1(color1).setColor2(color2);
+
+        return true;
     }
-    return new StaticConfig().setColors(Color.black);
-  }
 
-  private LightConfig buildBodyCfg(LightChangeRequest lcr) {
-    var color = lcr.getColor1();
-    switch (lcr.type) {
-      case "static":
-        return new StaticLightConfig().setColor(color);
-      case "wave":
-        return new WaveLightConfig().setHue(hueFrom(color)).setBrightness(lcr.getBrightness()).setSpeed(lcr.getSpeed()).setReverse(lcr.isReverse()).setBounce(lcr.isBounce());
-      case "rainbow":
-        return new RainbowLightConfig().setPhaseShift(lcr.getPhaseShift()).setBrightness(lcr.getBrightness()).setSpeed(lcr.getSpeed()).setReverse(lcr.isReverse());
-      case "breath":
-        return new BreathLightConfig().setHue(hueFrom(color)).setBrightness(lcr.getBrightness()).setSpeed(lcr.getSpeed());
-      default:
-        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to determine type for " + lcr.type);
+    @PostMapping("changeanalog")
+    public boolean changeAnalog(@RequestBody AnalogRequest ar) throws Exception {
+        var device = deviceService.getDevice(ar.getDevice()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
+
+        AnalogAction<?> aa = SpringContext.getBean((Class<AnalogAction<?>>) Class.forName((String) ar.getParams().get("__type")));
+        var obj = aa.getConfigurationClass().getConstructor().newInstance();
+        doWithFields(aa.getConfigurationClass(), f -> {
+            var value = ar.getParams().get(f.getName());
+            if (value != null) {
+                ReflectionUtils.setField(f, obj, value);
+            }
+        });
+
+        var idx = ar.getIdx() - 1 + (ar.getControl().equals("slider") ? device.getType().getButtonCount() : 0);
+        device.getActiveProfile().getActionsConfig().setAnalogAction(idx, (ActionConfig) obj);
+        return true;
     }
-  }
 
-  private int hueFrom(Color clr) {
-    return clr == null ? 0 : (int) Math.floor(Color.RGBtoHSB(clr.getRed(), clr.getGreen(), clr.getBlue(), null)[0] * 256);
-  }
+    private void setControlLight(ConnectedDevice device, LightChangeRequest lcr) {
+        var profile = device.getActiveProfile();
+        var currentConfig = profile.getLightConfig();
+        if (!(currentConfig instanceof CustomLightConfig)) {
+            currentConfig = CustomLightConfig.build(device.getType());
+            profile.setLightConfig(currentConfig);
+        }
+        var cfg = (CustomLightConfig) currentConfig;
 
-  @Data
-  public static class LightChangeRequest {
-    private String device;
-    private String control;
-    private int idx;
-    private String type;
-    @JsonColor private Color color1;
-    @JsonColor private Color color2;
-    private int brightness;
-    private int speed;
-    private int phaseShift;
-    private boolean reverse;
-    private boolean bounce;
-  }
+        var controlConfig = buildCfg(lcr);
+        var idx = lcr.getIdx() - 1;
+        switch (lcr.getControl()) {
+            case "knob":
+                cfg.setKnob(idx, (IControlConfig.KnobControlConfig) controlConfig);
+                break;
+            case "slider":
+                cfg.setSlider(idx, (IControlConfig.SliderControlConfig) controlConfig);
+                break;
+            case "slider-label":
+                cfg.setSliderLabel(idx, (StaticConfig) controlConfig);
+                break;
+            case "logo":
+                cfg.setLogo(controlConfig);
+                break;
+        }
 
-  @Data
-  public static class AnalogRequest {
-    private String device;
-    private String control;
-    private int idx;
-    private Map<String, Object> params;
-  }
+        device.setActiveProfile(profile);
+    }
+
+    private ControlConfig buildCfg(LightChangeRequest lcr) {
+        var color1 = lcr.getColor1();
+        var color2 = lcr.getColor2();
+        switch (lcr.getType()) {
+            case "static":
+                return new StaticConfig().setColors(color1);
+            case "wave":
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Wave and breath are not supported for controls");
+            case "breath":
+                return new LogoBreathConfig().setHue(hueFrom(color1)).setBrightness(lcr.getBrightness()).setSpeed(lcr.getSpeed());
+            case "rainbow":
+                return new LogoRainbowConfig().setBrightness(lcr.getBrightness()).setSpeed(lcr.getSpeed());
+            case "volumeGradient":
+                if (lcr.getControl().equals("knob")) {
+                    return new GradientConfig().setColor1(color1).setColor2(color2);
+                } else {
+                    return new VolumeGradientConfig().setColor1(color1).setColor2(color2);
+                }
+            case "gradient":
+                return new GradientConfig().setColor1(color1).setColor2(color2);
+        }
+        return new StaticConfig().setColors(Color.black);
+    }
+
+    private LightConfig buildBodyCfg(LightChangeRequest lcr) {
+        var color = lcr.getColor1();
+        switch (lcr.type) {
+            case "static":
+                return new StaticLightConfig().setColor(color);
+            case "wave":
+                return new WaveLightConfig().setHue(hueFrom(color)).setBrightness(lcr.getBrightness()).setSpeed(lcr.getSpeed()).setReverse(lcr.isReverse()).setBounce(lcr.isBounce());
+            case "rainbow":
+                return new RainbowLightConfig().setPhaseShift(lcr.getPhaseShift()).setBrightness(lcr.getBrightness()).setSpeed(lcr.getSpeed()).setReverse(lcr.isReverse());
+            case "breath":
+                return new BreathLightConfig().setHue(hueFrom(color)).setBrightness(lcr.getBrightness()).setSpeed(lcr.getSpeed());
+            default:
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to determine type for " + lcr.type);
+        }
+    }
+
+    private int hueFrom(Color clr) {
+        return clr == null ? 0 : (int) Math.floor(Color.RGBtoHSB(clr.getRed(), clr.getGreen(), clr.getBlue(), null)[0] * 256);
+    }
+
+    @Data
+    public static class LightChangeRequest {
+        private String device;
+        private String control;
+        private int idx;
+        private String type;
+        @JsonColor private Color color1;
+        @JsonColor private Color color2;
+        private int brightness;
+        private int speed;
+        private int phaseShift;
+        private boolean reverse;
+        private boolean bounce;
+    }
+
+    @Data
+    public static class AnalogRequest {
+        private String device;
+        private String control;
+        private int idx;
+        private Map<String, Object> params;
+    }
 }
