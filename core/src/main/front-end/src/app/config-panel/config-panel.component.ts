@@ -43,6 +43,11 @@ export class ConfigPanelComponent {
     this.buildControl();
   }
 
+  @Input()
+  set value(v: any) {
+    this.group.patchValue(v);
+  }
+
   get action(): AnalogAction {
     return this._action;
   }
