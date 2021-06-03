@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "sndctrl.h"
 #include "helper.h"
+#include "volumeosd.h"
 
 DeviceAddedCb* deviceAdded;
 DeviceRemovedCb* deviceRemoved;
@@ -108,10 +109,17 @@ extern "C" SNDCTRL_API void init(
 	}
 }
 
+void ShowVolume(int volume, bool muted, bool osd) {
+  if (osd) {
+    ShowVolumeOsd(volume, muted);
+  }
+}
+
 void setDeviceVolume(const LPWSTR id, int volume, bool osd) {
   if (devices.find(id) != devices.end()) {
     auto control = GetVolumeControl(*devices[id]);
     control->SetMasterVolumeLevelScalar(volume / 100.0f, nullptr);
+    ShowVolume(volume, false, osd);
   }
 }
 
@@ -122,6 +130,7 @@ void setProcessVolume(const LPWSTR name, int volume, bool osd) {
       CComQIPtr<ISimpleAudioVolume> cc = session.p;
       if (cc) {
         cc->SetMasterVolume(volume / 100.0f, nullptr);
+        ShowVolume(volume, false, osd);
       }
     }
   }
@@ -148,6 +157,7 @@ void setFgProcessVolume(int volume, bool osd) {
       CComQIPtr<ISimpleAudioVolume> cc(ctrl.p);
       if (cc) {
         cc->SetMasterVolume(volume / 100.0f, nullptr);
+        ShowVolume(volume, false, osd);
       }
     }
   }
