@@ -68,6 +68,10 @@ public class ConnectedDevice {
     sendCommand(config.toCommand());
   }
 
+  public void sendCurrentConfig() {
+    sendCommand(activeProfile.getLightConfig().toCommand());
+  }
+
   @EventListener
   public void deviceDisconnected(DeviceEvent event) {
     if (!event.isConnected() && event.getDevice().equals(device)) {

@@ -148,8 +148,19 @@ wstring GetProcessName(DWORD procId) {
 void setFgProcessVolume(int volume, bool osd) {
   DWORD procId;
   GetWindowThreadProcessId(GetForegroundWindow(), &procId);
-  auto name = GetProcessName(procId);
 
+  auto fromId = pid2control.find(procId);
+  if (fromId != pid2control.end()) {
+    CComQIPtr<ISimpleAudioVolume> cc(fromId->second.p);
+    if (cc) {
+      cc->SetMasterVolume(volume / 100.0f, nullptr);
+      ShowVolume(volume, false, osd);
+      return;
+    }
+  }
+
+  // Not found by pid, find by name
+  auto name = GetProcessName(procId);
   auto found = name2control.find(name);
   if (found != name2control.end()) {
     auto ps = *found;

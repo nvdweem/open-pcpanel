@@ -2,6 +2,7 @@ package dev.niels.pcpanel.core.profile;
 
 import dev.niels.pcpanel.core.device.Device;
 import dev.niels.pcpanel.plugins.AnalogAction;
+import dev.niels.pcpanel.plugins.Control;
 import dev.niels.pcpanel.plugins.KnobAction;
 import dev.niels.pcpanel.plugins.config.ActionConfig;
 import lombok.Data;
@@ -45,7 +46,7 @@ public class Actions {
       return EmptyAction.class;
     }
 
-    @Override public void triggerAction(EmptyAction config, int sliderPos) {
+    @Override public void triggerAction(Control c, EmptyAction config, int sliderPos) {
     }
   }
 }
