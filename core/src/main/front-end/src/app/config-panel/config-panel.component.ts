@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {AnalogAction} from '../service/actions.service';
+import {Action} from '../service/actions.service';
 import {AbstractControl, FormControl, FormGroup} from '@angular/forms';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import {Subscription} from 'rxjs';
@@ -15,7 +15,7 @@ import {startWith} from 'rxjs/operators';
 export class ConfigPanelComponent {
   @Output() configChanged = new EventEmitter<any>();
   private sub?: Subscription;
-  private _action!: AnalogAction;
+  private _action!: Action;
   group!: FormGroup;
 
   constructor() {
@@ -38,7 +38,7 @@ export class ConfigPanelComponent {
   }
 
   @Input()
-  set action(a: AnalogAction) {
+  set action(a: Action) {
     this._action = a;
     this.buildControl();
   }
@@ -48,7 +48,7 @@ export class ConfigPanelComponent {
     this.group.patchValue(v);
   }
 
-  get action(): AnalogAction {
+  get action(): Action {
     return this._action;
   }
 

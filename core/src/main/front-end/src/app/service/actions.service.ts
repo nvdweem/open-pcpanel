@@ -4,10 +4,11 @@ import {map, shareReplay} from 'rxjs/operators';
 import {Observable} from 'rxjs';
 
 export interface AllActions {
-  analogActions: AnalogAction[];
+  analogActions: Action[];
+  knobActions: Action[];
 }
 
-export interface AnalogAction {
+export interface Action {
   name: string;
   elements: ConfigElement[];
   impl: string;
@@ -22,10 +23,12 @@ export interface ConfigElement {
 })
 export class ActionsService {
   actions: Observable<AllActions>;
-  analog: Observable<AnalogAction[]>;
+  click: Observable<Action[]>;
+  analog: Observable<Action[]>;
 
   constructor(http: HttpClient) {
     this.actions = http.get<AllActions>('api/actions').pipe(shareReplay(1));
+    this.click = this.actions.pipe(map(aa => aa.knobActions));
     this.analog = this.actions.pipe(map(aa => aa.analogActions));
   }
 }

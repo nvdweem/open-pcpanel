@@ -1,6 +1,9 @@
 package dev.niels.pcpanel.core.web;
 
+import dev.niels.pcpanel.core.profile.Actions;
+import dev.niels.pcpanel.plugins.Action;
 import dev.niels.pcpanel.plugins.AnalogAction;
+import dev.niels.pcpanel.plugins.KnobAction;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import one.util.streamex.StreamEx;
@@ -20,23 +23,30 @@ import java.util.Map;
 @RequestMapping("actions")
 public class ActionsController {
   private final List<AnalogAction<?>> analogActions;
+  private final List<KnobAction<?>> knobActions;
 
   @GetMapping
   public AllActions getAllActions() {
-    return new AllActions(getAnalogActions());
+    return new AllActions(getAnalogActions(), getKnobActions());
   }
 
   @GetMapping("analog")
   public List<NameWithElements> getAnalogActions() {
-    return StreamEx.of(analogActions).map(this::toNameWithElements).toList();
+    return StreamEx.of(analogActions).removeBy(Object::getClass, Actions.EmptyAction.class).map(this::toNameWithElements).toList();
+  }
+
+  @GetMapping("knob")
+  public List<NameWithElements> getKnobActions() {
+    return StreamEx.of(knobActions).removeBy(Object::getClass, Actions.EmptyAction.class).map(this::toNameWithElements).toList();
   }
 
   @Data
   public static class AllActions {
     private final List<NameWithElements> analogActions;
+    private final List<NameWithElements> knobActions;
   }
 
-  private NameWithElements toNameWithElements(AnalogAction<?> action) {
+  private NameWithElements toNameWithElements(Action<?> action) {
     var elements = new ArrayList<Map<String, Object>>();
     ReflectionUtils.doWithFields(action.getConfigurationClass(), f -> {
       var as = f.getAnnotations();

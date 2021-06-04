@@ -48,5 +48,8 @@ public class Actions {
 
     @Override public void triggerAction(Control c, EmptyAction config, int sliderPos) {
     }
+
+    @Override public void triggerAction(Control control, EmptyAction config, boolean down) {
+    }
   }
 }

@@ -19,7 +19,7 @@ dependencies {
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
   implementation group: 'org.hid4java', name: 'hid4java', version: '0.7.0'
-  implementation group: 'one.util', name: 'streamex', version: '0.6.1'
+  implementation group: 'one.util', name: 'streamex', version: '0.7.3'
   implementation group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
 
   runtimeOnly 'com.h2database:h2'

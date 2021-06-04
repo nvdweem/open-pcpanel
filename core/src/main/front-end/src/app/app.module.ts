@@ -14,8 +14,7 @@ import {ControlConfigurationComponent} from './control-configuration/control-con
 import {DeviceComponent} from './device/device.component';
 import {SelectDeviceComponent} from './select-device/select-device.component';
 import {MatTabsModule} from '@angular/material/tabs';
-import {ClickableComponent} from './config/clickable/clickable.component';
-import {AnalogComponent} from './config/analog/analog.component';
+import {ActionComponent} from './config/action/action.component';
 import {LightComponent} from './config/light/light.component';
 import {HttpClientModule} from '@angular/common/http';
 import {ColorPickerModule} from '@iplab/ngx-color-picker';
@@ -33,8 +32,7 @@ import {MatInputModule} from '@angular/material/input';
     ControlConfigurationComponent,
     DeviceComponent,
     SelectDeviceComponent,
-    ClickableComponent,
-    AnalogComponent,
+    ActionComponent,
     LightComponent,
     DeviceProfileComponent,
     ConfigPanelComponent,

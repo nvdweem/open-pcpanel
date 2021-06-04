@@ -6,6 +6,7 @@ import dev.niels.pcpanel.core.device.light.control.GradientConfig;
 import dev.niels.pcpanel.core.device.light.control.StaticConfig;
 import dev.niels.pcpanel.core.device.light.control.VolumeGradientConfig;
 import dev.niels.pcpanel.plugins.AnalogAction;
+import dev.niels.pcpanel.plugins.KnobAction;
 import dev.niels.pcpanel.plugins.config.ActionConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +21,20 @@ public class DeviceHandler {
   public void controlTouched(DeviceControlEvent event) {
     log.trace("{}", event);
 
-    if (event.getType() == DeviceControlEvent.Type.knobRotate) {
-      var config = event.getConnectedDevice().getActiveProfile().getActionsConfig().getAnalogActions().get(event.getKey());
-      var action = (AnalogAction<ActionConfig>) SpringContext.getBean(config.getActionClass());
-      action.triggerAction(buildWrapper(event), config, event.getValue());
+    var actionConfig = event.getConnectedDevice().getActiveProfile().getActionsConfig();
+    switch (event.getType()) {
+      case knobPressed: {
+        var config = actionConfig.getKnobActions().get(event.getKey());
+        var action = (KnobAction<ActionConfig>) SpringContext.getBean(config.getActionClass());
+        action.triggerAction(buildWrapper(event), config, event.getValue() == 1);
+        break;
+      }
+      case knobRotate: {
+        var config = actionConfig.getAnalogActions().get(event.getKey());
+        var action = (AnalogAction<ActionConfig>) SpringContext.getBean(config.getActionClass());
+        action.triggerAction(buildWrapper(event), config, event.getValue());
+        break;
+      }
     }
   }
 
@@ -56,7 +67,6 @@ public class DeviceHandler {
       tcs = (a, b) -> {
       };
     }
-    var control = new ControlWrapper(isSlider, scs, tcs);
-    return control;
+    return new ControlWrapper(isSlider, scs, tcs);
   }
 }

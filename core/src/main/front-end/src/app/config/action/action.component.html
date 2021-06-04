@@ -1,6 +1,6 @@
 <div class="flex-static">
   <mat-nav-list>
-    <a *ngFor="let action of actionsService.analog | async" mat-list-item [class.active]="(selected | async) === action" (click)="selected.next(action)">{{action.name}}</a>
+    <a *ngFor="let action of (actionType === 'click' ? actionsService.click : actionsService.analog) | async" mat-list-item [class.active]="(selected | async) === action" (click)="selected.next(action)">{{action.name}}</a>
   </mat-nav-list>
 </div>
 <mat-divider vertical></mat-divider>
