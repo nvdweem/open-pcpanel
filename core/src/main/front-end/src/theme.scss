@@ -1,0 +1,34 @@
+@use '~@angular/material' as mat;
+
+@include mat.core();
+
+$light-primary: mat.define-palette(mat.$indigo-palette);
+$light-accent: mat.define-palette(mat.$pink-palette);
+$light-theme: mat.define-light-theme((
+  color: (
+    primary: $light-primary,
+    accent: $light-accent,
+  )
+));
+
+$dark-primary: mat.define-palette(mat.$pink-palette);
+$dark-accent: mat.define-palette(mat.$blue-gray-palette);
+$dark-theme: mat.define-dark-theme((
+  color: (
+    primary: $dark-primary,
+    accent: $dark-accent,
+  )
+));
+
+@include mat.all-component-themes($dark-theme);
+.mat-list-item.active {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+body.light {
+  @include mat.all-component-themes($light-theme);
+
+  .mat-list-item.active {
+    background-color: rgba(0, 0, 0, .04);
+  }
+}

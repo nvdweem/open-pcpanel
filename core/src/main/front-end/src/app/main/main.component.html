@@ -15,7 +15,10 @@
         (click)="drawer.toggle()">
         <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
       </button>
-      <span>Open PCPanel</span>
+      <span class="title">Open PCPanel</span>
+      <button mat-icon-button (click)="toggleDarkMode()">
+        <mat-icon>{{darkMode ? 'brightness_high' : 'brightness_2'}}</mat-icon>
+      </button>
     </mat-toolbar>
 
     <router-outlet></router-outlet>
