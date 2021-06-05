@@ -136,7 +136,7 @@ extern "C" SNDCTRL_API bool toggleDeviceMute(const LPWSTR id, bool osd) {
 
     ShowVolume(control, osd);
   }
-  return false;
+  return !isMute;
 }
 
 void setDeviceVolume(const LPWSTR id, int volume, bool osd) {

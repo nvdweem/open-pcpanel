@@ -3,6 +3,7 @@ package dev.niels.pcpanel.core.profile;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.niels.pcpanel.core.SpringContext;
 import dev.niels.pcpanel.core.device.light.LightConfig;
 import dev.niels.pcpanel.core.device.light.StaticLightConfig;
 import lombok.Data;
@@ -44,6 +45,10 @@ public class Profile {
 
   @Transient private LightConfig lightConfig;
   @Transient private Actions actionsConfig;
+
+  public Profile init() {
+    return init(SpringContext.getBean(ObjectMapper.class));
+  }
 
   public Profile init(ObjectMapper mapper) {
     lightConfig = tryParse(mapper, lights, LightConfig.class, () -> new StaticLightConfig().setColor(Color.black));

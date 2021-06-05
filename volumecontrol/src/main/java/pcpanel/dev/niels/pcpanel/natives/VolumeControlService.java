@@ -29,8 +29,8 @@ public class VolumeControlService {
     WindowsSndLibrary.INSTANCE.setFgProcessVolume(volume, osd);
   }
 
-  public void toggleDeviceMute(String device, boolean osd) {
-    WindowsSndLibrary.INSTANCE.toggleDeviceMute(new WString(device), osd);
+  public boolean toggleDeviceMute(String device, boolean osd) {
+    return WindowsSndLibrary.INSTANCE.toggleDeviceMute(new WString(device), osd);
   }
 
 }

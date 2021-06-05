@@ -6,9 +6,6 @@ pluginManagement {
 }
 rootProject.name = 'open-pcpanel'
 
-include 'winsndctrl'
 include 'core'
-include 'applicationstarter'
 include 'plugin'
 include 'volumecontrol'
-

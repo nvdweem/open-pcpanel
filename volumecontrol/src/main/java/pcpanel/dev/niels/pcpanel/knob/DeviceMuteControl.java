@@ -28,10 +28,11 @@ public class DeviceMuteControl implements KnobAction<DeviceMuteControl.DeviceMut
 
   @Override public void triggerAction(Control control, DeviceMuteConfig config, boolean down) {
     if (down) {
-      vcService.toggleDeviceMute(config.getDevice(), true);
-      control.setSingleColor(Color.red);
-    } else {
-      control.setSingleColor(Color.green);
+      if (vcService.toggleDeviceMute(config.getDevice(), true)) {
+        control.setSingleColor(Color.red);
+      } else {
+        control.setSingleColor(null);
+      }
     }
   }
 

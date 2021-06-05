@@ -3,8 +3,11 @@ package dev.niels.pcpanel.core.device;
 import dev.niels.pcpanel.core.SpringContext;
 import dev.niels.pcpanel.core.device.light.CustomLightConfig;
 import dev.niels.pcpanel.core.device.light.control.GradientConfig;
+import dev.niels.pcpanel.core.device.light.control.IControlConfig;
 import dev.niels.pcpanel.core.device.light.control.StaticConfig;
 import dev.niels.pcpanel.core.device.light.control.VolumeGradientConfig;
+import dev.niels.pcpanel.core.profile.Profile;
+import dev.niels.pcpanel.core.profile.ProfileRepository;
 import dev.niels.pcpanel.plugins.AnalogAction;
 import dev.niels.pcpanel.plugins.KnobAction;
 import dev.niels.pcpanel.plugins.config.ActionConfig;
@@ -17,6 +20,8 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class DeviceHandler {
+  private final ProfileRepository pr;
+
   @EventListener
   public void controlTouched(DeviceControlEvent event) {
     log.trace("{}", event);
@@ -41,23 +46,26 @@ public class DeviceHandler {
   private ControlWrapper buildWrapper(DeviceControlEvent event) {
     var isSlider = event.getKey() > event.getConnectedDevice().getType().getButtonCount();
     var idx = isSlider ? event.getKey() - event.getConnectedDevice().getType().getButtonCount() : event.getKey();
-    var config = event.getConnectedDevice().getActiveProfile().getLightConfig();
+    var activeProfile = event.getConnectedDevice().getActiveProfile();
+    var config = activeProfile.getLightConfig();
+    var originalConfig = pr.findById(activeProfile.getId()).map(Profile::init).orElse(activeProfile).getLightConfig();
+
     ControlWrapper.SingleColorSetter scs;
     ControlWrapper.TwoColorSetter tcs;
     if (config instanceof CustomLightConfig) {
       scs = color -> {
         if (isSlider) {
-          ((CustomLightConfig) config).setSlider(idx, new StaticConfig().setColor1(color));
+          ((CustomLightConfig) config).setSlider(idx, color != null ? new StaticConfig().setColor1(color) : (IControlConfig.SliderControlConfig) ((CustomLightConfig) originalConfig).getSliders().get(idx));
         } else {
-          ((CustomLightConfig) config).setKnob(idx, new StaticConfig().setColor1(color));
+          ((CustomLightConfig) config).setKnob(idx, color != null ? new StaticConfig().setColor1(color) : (IControlConfig.KnobControlConfig) ((CustomLightConfig) originalConfig).getKnobs().get(idx));
         }
         event.getConnectedDevice().sendCurrentConfig();
       };
       tcs = (color1, color2) -> {
         if (isSlider) {
-          ((CustomLightConfig) config).setSlider(idx, new VolumeGradientConfig().setColor1(color1).setColor2(color2));
+          ((CustomLightConfig) config).setSlider(idx, color1 != null && color2 != null ? new VolumeGradientConfig().setColor1(color1).setColor2(color2) : (IControlConfig.SliderControlConfig) ((CustomLightConfig) originalConfig).getSliders().get(idx));
         } else {
-          ((CustomLightConfig) config).setKnob(idx, new GradientConfig().setColor1(color1).setColor2(color2));
+          ((CustomLightConfig) config).setKnob(idx, color1 != null && color2 != null ? new GradientConfig().setColor1(color1).setColor2(color2) : (IControlConfig.KnobControlConfig) ((CustomLightConfig) originalConfig).getSliders().get(idx));
         }
         event.getConnectedDevice().sendCurrentConfig();
       };
