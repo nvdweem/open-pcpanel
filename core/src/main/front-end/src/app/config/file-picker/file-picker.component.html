@@ -1,0 +1,19 @@
+<div *ngIf="folder | async as folder" class="title">
+  <button mat-icon-button (click)="toParent(folder)">
+    <mat-icon>drive_file_move_rtl</mat-icon>
+  </button>
+  <h1>{{folder}}</h1>
+</div>
+
+<mat-nav-list>
+  <mat-list-item *ngIf="loader | async; else loaded">
+    <mat-progress-spinner mode="indeterminate" [diameter]="40"></mat-progress-spinner>
+    Loading
+  </mat-list-item>
+  <ng-template #loaded>
+    <mat-list-item *ngFor="let file of files | async" (click)="choose(file)">
+      <mat-icon>{{file.folder ? 'folder_open' : 'insert_drive_file'}}</mat-icon>
+      {{file.name}}
+    </mat-list-item>
+  </ng-template>
+</mat-nav-list>

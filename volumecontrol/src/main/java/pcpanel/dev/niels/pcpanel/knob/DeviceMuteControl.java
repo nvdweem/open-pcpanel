@@ -26,15 +26,13 @@ public class DeviceMuteControl implements KnobAction<DeviceMuteControl.DeviceMut
     return DeviceMuteConfig.class;
   }
 
-  @Override public void triggerAction(Control control, DeviceMuteConfig config, boolean down) {
-    if (down) {
-      if (vcService.toggleDeviceMute(config.getDevice(), true)) {
-        if (config.isHasMuteColor()) {
-          control.setSingleColor(config.getMuteColor());
-        }
-      } else {
-        control.setSingleColor(null);
+  @Override public void buttonDown(Control control, DeviceMuteConfig config) {
+    if (vcService.toggleDeviceMute(config.getDevice(), true)) {
+      if (config.isHasMuteColor()) {
+        control.setSingleColor(config.getMuteColor());
       }
+    } else {
+      control.setSingleColor(null);
     }
   }
 

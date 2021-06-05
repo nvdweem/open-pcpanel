@@ -9,3 +9,5 @@ rootProject.name = 'open-pcpanel'
 include 'core'
 include 'plugin'
 include 'volumecontrol'
+include 'startapplication'
+

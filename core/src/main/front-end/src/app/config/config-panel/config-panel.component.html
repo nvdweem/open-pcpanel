@@ -26,6 +26,13 @@
     <mat-form-field *ngSwitchCase="'filepicker'">
       <mat-label>{{elem.label}}</mat-label>
       <input [formControlName]="elem.name" matInput>
+
+      <button mat-icon-button matSuffix (click)="showDialog(filepicker, elem.name)">
+        <mat-icon>folder</mat-icon>
+      </button>
+      <ng-template #filepicker>
+        <pcp-file-picker [controlName]="elem.name"></pcp-file-picker>
+      </ng-template>
     </mat-form-field>
 
     <div *ngSwitchCase="'label'">

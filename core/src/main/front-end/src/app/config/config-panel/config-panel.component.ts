@@ -1,11 +1,12 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, TemplateRef} from '@angular/core';
 import {Action, ConfigElement} from '../../service/actions.service';
 import {AbstractControl, FormControl, FormGroup} from '@angular/forms';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import {combineLatest, Observable, Subscription} from 'rxjs';
-import {map, shareReplay, startWith} from 'rxjs/operators';
+import {map, shareReplay, startWith, takeUntil} from 'rxjs/operators';
 import {HttpClient} from '@angular/common/http';
 import {ColorPickerControl} from '@iplab/ngx-color-picker';
+import {MatDialog} from '@angular/material/dialog';
 
 export interface ListOption {
   value: string;
@@ -27,7 +28,8 @@ export class ConfigPanelComponent {
   listOptions: { [key: string]: Observable<ListOption[]> } = {};
   colorControls: { [key: string]: ColorPickerControl } = {};
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient,
+              private dialog: MatDialog) {
   }
 
   private buildControl(): void {
@@ -89,5 +91,10 @@ export class ConfigPanelComponent {
       }
       return id;
     };
+  }
+
+  showDialog(filepicker: TemplateRef<any>, controlName: string): void {
+    const fp = this.dialog.open(filepicker);
+    this.group.get(controlName)?.valueChanges.pipe(takeUntil(fp.afterClosed())).subscribe(() => fp.close());
   }
 }

@@ -23,10 +23,13 @@ import {MatSliderModule} from '@angular/material/slider';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {DeviceProfileComponent} from './device-profile/device-profile.component';
 import {ConfigPanelComponent} from './config/config-panel/config-panel.component';
-import {MatFormFieldModule} from '@angular/material/form-field';
+import {MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatOptionModule} from '@angular/material/core';
+import {MatDialogModule} from '@angular/material/dialog';
+import {FilePickerComponent} from './config/file-picker/file-picker.component';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 @NgModule({
   declarations: [
@@ -38,6 +41,7 @@ import {MatOptionModule} from '@angular/material/core';
     LightComponent,
     DeviceProfileComponent,
     ConfigPanelComponent,
+    FilePickerComponent,
   ],
   imports: [
     BrowserModule,
@@ -59,8 +63,17 @@ import {MatOptionModule} from '@angular/material/core';
     MatInputModule,
     MatAutocompleteModule,
     MatOptionModule,
+    MatDialogModule,
+    MatProgressSpinnerModule,
   ],
-  providers: [],
+  providers: [
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: {
+        appearance: 'fill'
+      },
+    }
+  ],
   bootstrap: [MainComponent]
 })
 export class AppModule {

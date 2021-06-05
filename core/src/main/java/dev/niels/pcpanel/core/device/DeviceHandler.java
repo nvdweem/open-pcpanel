@@ -30,13 +30,19 @@ public class DeviceHandler {
     switch (event.getType()) {
       case knobPressed: {
         var config = actionConfig.getKnobActions().get(event.getKey());
-        var action = (KnobAction<ActionConfig>) SpringContext.getBean(config.getActionClass());
-        action.triggerAction(buildWrapper(event), config, event.getValue() == 1);
+        var clazz = config.getActionClass().asSubclass(KnobAction.class);
+        KnobAction<ActionConfig> action = SpringContext.getBean(clazz);
+        if (event.getValue() == 1) {
+          action.buttonDown(buildWrapper(event), config);
+        } else {
+          action.buttonUp(buildWrapper(event), config);
+        }
         break;
       }
       case knobRotate: {
         var config = actionConfig.getAnalogActions().get(event.getKey());
-        var action = (AnalogAction<ActionConfig>) SpringContext.getBean(config.getActionClass());
+        var clazz = config.getActionClass().asSubclass(AnalogAction.class);
+        AnalogAction<ActionConfig> action = SpringContext.getBean(clazz);
         action.triggerAction(buildWrapper(event), config, event.getValue());
         break;
       }

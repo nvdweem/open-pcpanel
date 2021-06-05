@@ -1,0 +1,22 @@
+div.title {
+  display: flex;
+
+  span.title {
+    font-size: large;
+  }
+}
+
+mat-nav-list {
+  height: 80vh;
+  max-height: 80vh;
+  width: 40vw;
+  overflow: auto;
+}
+
+mat-progress-spinner {
+  padding-right: 1em;
+}
+
+mat-list-item mat-icon {
+  padding-right: .25em;
+}
