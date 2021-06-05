@@ -1,5 +1,7 @@
 package dev.niels.pcpanel.plugins;
 
-public interface KnobAction<T> extends Action<T> {
+import dev.niels.pcpanel.plugins.config.ActionConfig;
+
+public interface KnobAction<T extends ActionConfig> extends Action<T> {
   void triggerAction(Control control, T config, boolean down);
 }
