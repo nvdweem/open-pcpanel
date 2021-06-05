@@ -61,4 +61,13 @@ public interface ConfigElement {
 
     String value();
   }
+
+  @Retention(RetentionPolicy.RUNTIME) @interface Dropdown {
+    String type() default "list";
+
+    String label();
+
+    String listSource();
+  }
+
 }

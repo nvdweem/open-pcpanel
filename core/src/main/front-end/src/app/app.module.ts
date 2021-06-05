@@ -22,9 +22,11 @@ import {ReactiveFormsModule} from '@angular/forms';
 import {MatSliderModule} from '@angular/material/slider';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {DeviceProfileComponent} from './device-profile/device-profile.component';
-import {ConfigPanelComponent} from './config-panel/config-panel.component';
+import {ConfigPanelComponent} from './config/config-panel/config-panel.component';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {MatOptionModule} from '@angular/material/core';
 
 @NgModule({
   declarations: [
@@ -55,6 +57,8 @@ import {MatInputModule} from '@angular/material/input';
     MatCheckboxModule,
     MatFormFieldModule,
     MatInputModule,
+    MatAutocompleteModule,
+    MatOptionModule,
   ],
   providers: [],
   bootstrap: [MainComponent]

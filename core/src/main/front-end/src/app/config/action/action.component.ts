@@ -40,7 +40,6 @@ export class ActionComponent {
 
         idx = Number(number) - 1;
         if (type === 'slider') idx += 4;
-        console.log(this.actionType);
       }),
       switchMap(() => combineLatest([ds.device$(device), this.actionType === 'click' ? actionsService.click : actionsService.analog])),
       map(([device, aa]) => {
@@ -52,9 +51,7 @@ export class ActionComponent {
       shareReplay(1));
     this.options.subscribe();
 
-    this.toUpdate.pipe(untilDestroyed(this), debounceTime(500), switchMap(val => this.save(device, type, number, val))).subscribe(val => {
-      console.log('Update', val);
-    });
+    this.toUpdate.pipe(untilDestroyed(this), debounceTime(500), switchMap(val => this.save(device, type, number, val))).subscribe();
   }
 
   private save(device: string, control: string, idx: string, params: any): Observable<any> {

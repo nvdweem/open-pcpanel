@@ -1,14 +1,6 @@
 #pragma once
 #include "pch.h"
 
-struct PunkRelease {
-  void operator()(IUnknown* punk) {
-    if (punk != NULL) {
-      cout << "Free!" << endl;
-      punk->Release();
-    }
-  }
-};
 struct CoRelease {
   void operator()(LPVOID itm) {
     if (itm != NULL) {

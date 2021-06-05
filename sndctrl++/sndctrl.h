@@ -21,6 +21,7 @@ extern "C" SNDCTRL_API void init(
 	DeviceAddedCb deviceAdded, DeviceRemovedCb deviceRemoved, 
 	SessionAddedCb sessionAdded, SessionRemovedCb sessionRemoved);
 
+extern "C" SNDCTRL_API bool toggleDeviceMute(const LPWSTR id, bool osd);
 extern "C" SNDCTRL_API void setDeviceVolume(const LPWSTR id, int volume, bool osd);
 extern "C" SNDCTRL_API void setProcessVolume(const LPWSTR name, int volume, bool osd);
 extern "C" SNDCTRL_API void setFgProcessVolume(int volume, bool osd);

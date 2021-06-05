@@ -5,16 +5,19 @@ import dev.niels.pcpanel.plugins.KnobAction;
 import dev.niels.pcpanel.plugins.config.ActionConfig;
 import dev.niels.pcpanel.plugins.config.ConfigElement;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RestController;
+import pcpanel.dev.niels.pcpanel.natives.VolumeControlService;
 
 import java.awt.Color;
 
 @Slf4j
 @Component
-@RestController
+@RequiredArgsConstructor
 public class DeviceMuteControl implements KnobAction<DeviceMuteControl.DeviceMuteConfig> {
+  private final VolumeControlService vcService;
+
   @Override public String getName() {
     return "Mute device";
   }
@@ -25,6 +28,7 @@ public class DeviceMuteControl implements KnobAction<DeviceMuteControl.DeviceMut
 
   @Override public void triggerAction(Control control, DeviceMuteConfig config, boolean down) {
     if (down) {
+      vcService.toggleDeviceMute(config.getDevice(), true);
       control.setSingleColor(Color.red);
     } else {
       control.setSingleColor(Color.green);
@@ -33,7 +37,7 @@ public class DeviceMuteControl implements KnobAction<DeviceMuteControl.DeviceMut
 
   @Data
   public static class DeviceMuteConfig implements ActionConfig {
-    @ConfigElement.Text(label = "Device") private String device;
+    @ConfigElement.Dropdown(label = "Device", listSource = "volumecontrol/devices") private String device;
 
     @Override public Class<DeviceMuteControl> getActionClass() {
       return DeviceMuteControl.class;

@@ -32,5 +32,17 @@
       <mat-label>{{elem.value}}</mat-label>
     </div>
 
+    <div *ngSwitchCase="'list'">
+      <!-- Delayed on options so that the initial value is correctly displayed -->
+      <mat-form-field *ngIf="listOptions[elem.name] | async as options">
+        <mat-label>{{elem.label}}</mat-label>
+        <input matInput type="text" placeholder="Pick one" [formControlName]="elem.name" [matAutocomplete]="auto">
+        <mat-autocomplete #auto="matAutocomplete" [displayWith]="listDisplayFn(elem.name)">
+          <mat-option *ngFor="let option of options" [value]="option.value">
+            {{option.display}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
   </ng-container>
 </div>

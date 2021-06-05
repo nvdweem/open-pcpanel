@@ -15,6 +15,9 @@ export interface Action {
 }
 
 export interface ConfigElement {
+  name: string;
+  type: string;
+
   [key: string]: any;
 }
 

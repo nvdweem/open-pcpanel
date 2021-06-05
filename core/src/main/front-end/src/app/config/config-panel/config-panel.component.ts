@@ -1,9 +1,15 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {Action} from '../service/actions.service';
+import {Action, ConfigElement} from '../../service/actions.service';
 import {AbstractControl, FormControl, FormGroup} from '@angular/forms';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
-import {Subscription} from 'rxjs';
-import {startWith} from 'rxjs/operators';
+import {combineLatest, Observable, Subscription} from 'rxjs';
+import {map, shareReplay, startWith} from 'rxjs/operators';
+import {HttpClient} from '@angular/common/http';
+
+export interface ListOption {
+  value: string;
+  display: string;
+}
 
 @UntilDestroy()
 @Component({
@@ -17,8 +23,9 @@ export class ConfigPanelComponent {
   private sub?: Subscription;
   private _action!: Action;
   group!: FormGroup;
+  listOptions: { [key: string]: Observable<ListOption[]> } = {};
 
-  constructor() {
+  constructor(private http: HttpClient) {
   }
 
   private buildControl(): void {
@@ -26,9 +33,11 @@ export class ConfigPanelComponent {
 
     controls.__type = new FormControl(this._action.impl);
     for (let ce of this._action.elements) {
-      const name = (ce as any).name;
-      if (name) {
-        controls[name] = new FormControl((ce as any).def);
+      if (ce.name) {
+        controls[ce.name] = new FormControl((ce as any).def);
+        if (ce.type === 'list') {
+          this.initList(ce, controls[ce.name]);
+        }
       }
     }
     this.group = new FormGroup(controls);
@@ -56,5 +65,22 @@ export class ConfigPanelComponent {
     const p: { [key: string]: any } = {};
     p[name] = value;
     this.group.patchValue(p);
+  }
+
+  private initList(ce: ConfigElement, control: AbstractControl): void {
+    const allOptions = this.http.get<ListOption[]>(`api/${ce.listSource}`).pipe(shareReplay(1));
+    const filtered = combineLatest([allOptions, control.valueChanges.pipe(startWith(control.value || ''))]).pipe(map(([vs, f]) => vs.filter(v => v.display.toLowerCase().indexOf(f) !== -1)));
+    this.listOptions[ce.name] = filtered;
+  }
+
+  listDisplayFn(name: string): (id: string) => string {
+    return id => {
+      let option: ListOption[] = [];
+      this.listOptions[name].subscribe(vs => option = vs.filter(v => v.value === id)).unsubscribe();
+      if (option.length === 1) {
+        return option[0].display;
+      }
+      return id;
+    };
   }
 }

@@ -109,10 +109,34 @@ extern "C" SNDCTRL_API void init(
 	}
 }
 
+
+
 void ShowVolume(int volume, bool muted, bool osd) {
   if (osd) {
     ShowVolumeOsd(volume, muted);
   }
+}
+
+void ShowVolume(CComPtr<IAudioEndpointVolume>& volume, bool osd) {
+  if (osd) {
+    BOOL isMute = false;
+    float volumeLevel = 0;
+    volume->GetMute(&isMute);
+    volume->GetMasterVolumeLevelScalar(&volumeLevel);
+    ShowVolume((int) (volumeLevel * 100), isMute ? true : false, true);
+  }
+}
+
+extern "C" SNDCTRL_API bool toggleDeviceMute(const LPWSTR id, bool osd) {
+  BOOL isMute = false;
+  if (devices.find(id) != devices.end()) {
+    auto control = GetVolumeControl(*devices[id]);
+    control->GetMute(&isMute);
+    control->SetMute(!isMute, nullptr);
+
+    ShowVolume(control, osd);
+  }
+  return false;
 }
 
 void setDeviceVolume(const LPWSTR id, int volume, bool osd) {

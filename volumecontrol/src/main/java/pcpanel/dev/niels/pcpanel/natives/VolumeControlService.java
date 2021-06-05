@@ -1,38 +1,36 @@
 package pcpanel.dev.niels.pcpanel.natives;
 
+import com.sun.jna.WString;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
 public class VolumeControlService {
-  private List<String> dIds = new ArrayList<>();
-  private List<String> sIds = new ArrayList<>();
+  @Getter private Map<String, String> devices = new HashMap<>();
+  @Getter private Map<Long, String> sessions = new HashMap<>();
 
   @PostConstruct
   public void construct() {
-    System.out.println("Test!");
-
     WindowsSndLibrary.INSTANCE.init(
-      (a, b) -> {
-        log.error("Device added!!! {}, {}", a, b);
-        dIds.add(b.toString());
-      },
-      a -> log.error("Device removed: {}", a),
-      (a, b) -> {
-        log.error("    Session added!!! {}, {}", a, b);
-        sIds.add(b.toString());
-      },
-      a -> log.error("    Session removed: {}", a)
+      (name, id) -> devices.put(id.toString(), name.toString()),
+      name -> devices.remove(name.toString()),
+      (pid, process) -> sessions.put(pid, process.toString()),
+      pid -> sessions.remove(pid)
     );
-
   }
 
   public void setFgVolume(int volume, boolean osd) {
     WindowsSndLibrary.INSTANCE.setFgProcessVolume(volume, osd);
   }
+
+  public void toggleDeviceMute(String device, boolean osd) {
+    WindowsSndLibrary.INSTANCE.toggleDeviceMute(new WString(device), osd);
+  }
+
 }

@@ -16,6 +16,8 @@ public interface WindowsSndLibrary extends Library {
 
   void setFgProcessVolume(int volume, boolean osd);
 
+  void toggleDeviceMute(WString volume, boolean osd);
+
   void getForegroundProcess(StringCallback cb);
 
   interface DeviceAdded extends Callback {
