@@ -5,6 +5,7 @@ import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import {combineLatest, Observable, Subscription} from 'rxjs';
 import {map, shareReplay, startWith} from 'rxjs/operators';
 import {HttpClient} from '@angular/common/http';
+import {ColorPickerControl} from '@iplab/ngx-color-picker';
 
 export interface ListOption {
   value: string;
@@ -24,6 +25,7 @@ export class ConfigPanelComponent {
   private _action!: Action;
   group!: FormGroup;
   listOptions: { [key: string]: Observable<ListOption[]> } = {};
+  colorControls: { [key: string]: ColorPickerControl } = {};
 
   constructor(private http: HttpClient) {
   }
@@ -35,8 +37,14 @@ export class ConfigPanelComponent {
     for (let ce of this._action.elements) {
       if (ce.name) {
         controls[ce.name] = new FormControl((ce as any).def);
-        if (ce.type === 'list') {
-          this.initList(ce, controls[ce.name]);
+
+        switch (ce.type) {
+          case 'list':
+            this.initList(ce, controls[ce.name]);
+            break;
+          case 'color':
+            this.colorControls[ce.name] = new ColorPickerControl().hidePresets().hideAlphaChannel();
+            break;
         }
       }
     }
@@ -69,8 +77,7 @@ export class ConfigPanelComponent {
 
   private initList(ce: ConfigElement, control: AbstractControl): void {
     const allOptions = this.http.get<ListOption[]>(`api/${ce.listSource}`).pipe(shareReplay(1));
-    const filtered = combineLatest([allOptions, control.valueChanges.pipe(startWith(control.value || ''))]).pipe(map(([vs, f]) => vs.filter(v => v.display.toLowerCase().indexOf(f) !== -1)));
-    this.listOptions[ce.name] = filtered;
+    this.listOptions[ce.name] = combineLatest([allOptions, control.valueChanges.pipe(startWith(control.value || ''))]).pipe(map(([vs, f]) => vs.filter(v => v.display.toLowerCase().indexOf(f) !== -1)));
   }
 
   listDisplayFn(name: string): (id: string) => string {

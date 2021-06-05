@@ -70,4 +70,11 @@ public interface ConfigElement {
     String listSource();
   }
 
+  @Retention(RetentionPolicy.RUNTIME) @interface Color {
+    String type() default "color";
+
+    String def() default "";
+
+    String label();
+  }
 }

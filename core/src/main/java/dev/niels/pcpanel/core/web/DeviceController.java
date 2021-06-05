@@ -19,7 +19,6 @@ import dev.niels.pcpanel.core.device.light.control.StaticConfig;
 import dev.niels.pcpanel.core.device.light.control.VolumeGradientConfig;
 import dev.niels.pcpanel.core.profile.Actions;
 import dev.niels.pcpanel.plugins.Action;
-import dev.niels.pcpanel.plugins.AnalogAction;
 import dev.niels.pcpanel.plugins.config.ActionConfig;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -66,15 +65,16 @@ public class DeviceController {
   private boolean changeControl(AnalogRequest ar, TriConsumer<Actions, Integer, ActionConfig> setter) throws Exception {
     var device = deviceService.getDevice(ar.getDevice()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
 
-    Action<?> aa = SpringContext.getBean((Class<AnalogAction<?>>) Class.forName((String) ar.getParams().get("__type")));
+    Action<?> aa = SpringContext.getBean(Class.forName((String) ar.getParams().get("__type")).asSubclass(Action.class));
     var obj = aa.getConfigurationClass().getConstructor().newInstance();
     doWithFields(aa.getConfigurationClass(), f -> {
       var value = ar.getParams().get(f.getName());
       if (f.getType() == Integer.class && value != null) {
-        ReflectionUtils.setField(f, obj, Integer.parseInt(value.toString()));
-      } else {
-        ReflectionUtils.setField(f, obj, value);
+        value = Integer.parseInt(value.toString());
+      } else if (f.getType() == Color.class && value != null) {
+        value = JsonColor.ColorDeserializer.parseColor(value.toString());
       }
+      ReflectionUtils.setField(f, obj, value);
     });
 
     var idx = ar.getIdx() - 1 + (ar.getControl().equals("slider") ? device.getType().getButtonCount() : 0);

@@ -34,7 +34,7 @@ public @interface JsonColor {
   }
 
   class ColorDeserializer extends StdDeserializer<Color> {
-    private static final Pattern rgbPattern = Pattern.compile("rgb\\((\\d+), (\\d+), (\\d+)\\)");
+    private static final Pattern rgbPattern = Pattern.compile("rgba?\\((\\d+), (\\d+), (\\d+)(, \\d+)?\\)");
 
     protected ColorDeserializer() {
       super(Color.class);
@@ -44,7 +44,7 @@ public @interface JsonColor {
       return parseColor(p.getText());
     }
 
-    private Color parseColor(String color) {
+    public static Color parseColor(String color) {
       if (StringUtils.hasText(color)) {
         var m = rgbPattern.matcher(color);
         if (m.find()) {
