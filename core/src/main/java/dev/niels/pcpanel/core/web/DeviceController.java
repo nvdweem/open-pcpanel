@@ -70,7 +70,9 @@ public class DeviceController {
     var obj = aa.getConfigurationClass().getConstructor().newInstance();
     doWithFields(aa.getConfigurationClass(), f -> {
       var value = ar.getParams().get(f.getName());
-      if (value != null) {
+      if (f.getType() == Integer.class && value != null) {
+        ReflectionUtils.setField(f, obj, Integer.parseInt(value.toString()));
+      } else {
         ReflectionUtils.setField(f, obj, value);
       }
     });

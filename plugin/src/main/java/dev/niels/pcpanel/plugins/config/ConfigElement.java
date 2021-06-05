@@ -7,11 +7,15 @@ public interface ConfigElement {
   @Retention(RetentionPolicy.RUNTIME) @interface Text {
     String type() default "text";
 
+    String def() default "";
+
     String label();
   }
 
   @Retention(RetentionPolicy.RUNTIME) @interface Number {
     String type() default "number";
+
+    String def() default "";
 
     String label();
   }
@@ -19,17 +23,23 @@ public interface ConfigElement {
   @Retention(RetentionPolicy.RUNTIME) @interface Checkbox {
     String type() default "checkbox";
 
+    boolean def() default false;
+
     String label();
   }
 
   @Retention(RetentionPolicy.RUNTIME) @interface TextArea {
     String type() default "textarea";
 
+    String def() default "";
+
     String label();
   }
 
   @Retention(RetentionPolicy.RUNTIME) @interface Slider {
     String type() default "slider";
+
+    int def() default 0;
 
     String label();
 

@@ -30,9 +30,9 @@ public class AppVolumeControl implements AnalogAction<AppVolumeControl.AppVolume
     @ConfigElement.FilePicker(label = "Application", extension = "exe") private String application;
 
     @ConfigElement.Checkbox(label = "Show OSD") private boolean osd = false;
-    @ConfigElement.Checkbox(label = "Logarithmic scaling") private boolean logScaling = false;
-    @ConfigElement.Number(label = "Trim min") private Integer trimMin;
-    @ConfigElement.Number(label = "Trim max") private Integer trimMax;
+    @ConfigElement.Checkbox(label = "Logarithmic scaling", def = true) private boolean logScaling = false;
+    @ConfigElement.Number(label = "Trim min", def = "0") private Integer trimMin;
+    @ConfigElement.Number(label = "Trim max", def = "100") private Integer trimMax;
 
     @Override public Class<AppVolumeControl> getActionClass() {
       return AppVolumeControl.class;

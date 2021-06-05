@@ -28,7 +28,7 @@ export class ConfigPanelComponent {
     for (let ce of this._action.elements) {
       const name = (ce as any).name;
       if (name) {
-        controls[name] = new FormControl();
+        controls[name] = new FormControl((ce as any).def);
       }
     }
     this.group = new FormGroup(controls);
