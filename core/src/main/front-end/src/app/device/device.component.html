@@ -1,19 +1,5 @@
-<div class="imagemap">
-  <img alt="PCPanel Pro" src="assets/pro.png" usemap="#image-map">
-  <map name="image-map">
-    <area alt="Knob 1" title="Knob 1" coords="173,108,54" shape="circle" routerLink="./knob/1/click">
-    <area alt="Knob 2" title="Knob 2" coords="308,109,56" shape="circle" routerLink="./knob/2/click">
-    <area alt="Knob 3" title="Knob 3" coords="108,206,52" shape="circle" routerLink="./knob/3/click">
-    <area alt="Knob 4" title="Knob 4" coords="242,207,53" shape="circle" routerLink="./knob/4/click">
-    <area alt="Knob 5" title="Knob 5" coords="375,206,54" shape="circle" routerLink="./knob/5/click">
-    <area alt="Slider 1" title="Slider 1" coords="42,277,131,571" shape="rect" routerLink="./slider/1/analog">
-    <area alt="Slider 2" title="Slider 2" coords="137,278,213,572" shape="rect" routerLink="./slider/2/analog">
-    <area alt="Slider 3" title="Slider 3" coords="260,278,344,577" shape="rect" routerLink="./slider/3/analog">
-    <area alt="Slider 4" title="Slider 4" coords="352,278,432,578" shape="rect" routerLink="./slider/4/analog">
-    <area alt="Logo" title="Logo" coords="215,531,260,571" shape="rect" routerLink="./logo/0/light">
-    <area alt="Body" title="Body" coords="20,12,481,602" shape="rect" routerLink="./body/0/light">
-  </map>
-  <br>
+<div class="device">
+  <pcp-pro [device]="deviceObject$ | async" (controlClicked)="navigateTo($event)"></pcp-pro>
   <div class="save">
     <a mat-flat-button color="primary" (click)="save()"> Save changes </a>
   </div>

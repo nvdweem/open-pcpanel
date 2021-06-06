@@ -30,6 +30,7 @@ import {MatOptionModule} from '@angular/material/core';
 import {MatDialogModule} from '@angular/material/dialog';
 import {FilePickerComponent} from './config/file-picker/file-picker.component';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {ProComponent} from './device/pro/pro.component';
 
 @NgModule({
   declarations: [
@@ -42,6 +43,7 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
     DeviceProfileComponent,
     ConfigPanelComponent,
     FilePickerComponent,
+    ProComponent,
   ],
   imports: [
     BrowserModule,

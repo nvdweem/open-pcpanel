@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable, Subject} from 'rxjs';
-import {filter, map, shareReplay, startWith, switchMap} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, filter, map, shareReplay, startWith, switchMap} from 'rxjs/operators';
 
 export interface Device {
   states: number[];
@@ -27,7 +27,13 @@ export class DeviceService {
   devices$: Observable<Device[]>;
 
   constructor(private http: HttpClient) {
-    this.devices$ = this.reload$.pipe(startWith(0), switchMap(() => http.get<Device[]>('api/devices').pipe(shareReplay(1))));
+    this.devices$ = this.reload$.pipe(
+      debounceTime(10),
+      startWith(0),
+      switchMap(() => http.get<Device[]>('api/devices')),
+      shareReplay(1),
+      distinctUntilChanged((l, r) => JSON.stringify(l) === JSON.stringify(r))
+    );
   }
 
   device$(id: string): Observable<Device> {
