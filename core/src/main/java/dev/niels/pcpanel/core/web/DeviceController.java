@@ -4,6 +4,7 @@ import dev.niels.pcpanel.core.JsonColor;
 import dev.niels.pcpanel.core.SpringContext;
 import dev.niels.pcpanel.core.device.ConnectedDevice;
 import dev.niels.pcpanel.core.device.ConnectedDeviceService;
+import dev.niels.pcpanel.core.device.DeviceControlLightChangedEvent;
 import dev.niels.pcpanel.core.device.light.BreathLightConfig;
 import dev.niels.pcpanel.core.device.light.CustomLightConfig;
 import dev.niels.pcpanel.core.device.light.LightConfig;
@@ -24,6 +25,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.TriConsumer;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +45,7 @@ import static org.springframework.util.ReflectionUtils.doWithFields;
 @RequiredArgsConstructor
 public class DeviceController {
   private final ConnectedDeviceService deviceService;
+  private final ApplicationEventPublisher eventPublisher;
 
   @GetMapping("devices")
   public Collection<ConnectedDevice> getConnectedDevices() {
@@ -78,7 +81,7 @@ public class DeviceController {
     });
 
     var idx = ar.getIdx() - 1 + (ar.getControl().equals("slider") ? device.getType().getButtonCount() : 0);
-    setter.accept(device.getActiveProfile().getActionsConfig(), idx, (ActionConfig) obj);
+    setter.accept(device.getActiveProfile().getActionsConfig(), idx, obj);
     return true;
   }
 
@@ -106,15 +109,19 @@ public class DeviceController {
     switch (lcr.getControl()) {
       case "knob":
         cfg.setKnob(idx, (IControlConfig.KnobControlConfig) controlConfig);
+        eventPublisher.publishEvent(new DeviceControlLightChangedEvent(device, null, idx));
         break;
       case "slider":
         cfg.setSlider(idx, (IControlConfig.SliderControlConfig) controlConfig);
+        eventPublisher.publishEvent(new DeviceControlLightChangedEvent(device, null, idx + device.getType().getButtonCount()));
         break;
       case "slider-label":
         cfg.setSliderLabel(idx, (StaticConfig) controlConfig);
+        eventPublisher.publishEvent(new DeviceControlLightChangedEvent(device, "slider-label", idx + device.getType().getButtonCount()));
         break;
       case "logo":
         cfg.setLogo(controlConfig);
+        eventPublisher.publishEvent(new DeviceControlLightChangedEvent(device, "logo", idx + device.getType().getButtonCount()));
         break;
     }
 
