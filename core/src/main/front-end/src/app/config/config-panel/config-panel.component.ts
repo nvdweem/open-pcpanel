@@ -5,8 +5,9 @@ import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import {combineLatest, Observable, Subscription} from 'rxjs';
 import {map, shareReplay, startWith, takeUntil} from 'rxjs/operators';
 import {HttpClient} from '@angular/common/http';
-import {ColorPickerControl} from '@iplab/ngx-color-picker';
+import {Color, ColorPickerControl} from '@iplab/ngx-color-picker';
 import {MatDialog} from '@angular/material/dialog';
+import {ColorString} from '@iplab/ngx-color-picker/lib/helpers/color.class';
 
 export interface ListOption {
   value: string;
@@ -53,7 +54,10 @@ export class ConfigPanelComponent {
     this.group = new FormGroup(controls);
 
     this.sub?.unsubscribe();
-    this.sub = this.group.valueChanges.pipe(startWith(this.group.value), untilDestroyed(this)).subscribe(val => this.configChanged.next(val));
+    this.sub = this.group.valueChanges.pipe(startWith(this.group.value), untilDestroyed(this)).subscribe(val => {
+      console.log(val);
+      this.configChanged.next(val);
+    });
   }
 
   @Input()
@@ -96,5 +100,13 @@ export class ConfigPanelComponent {
   showDialog(filepicker: TemplateRef<any>, controlName: string): void {
     const fp = this.dialog.open(filepicker);
     this.group.get(controlName)?.valueChanges.pipe(takeUntil(fp.afterClosed())).subscribe(() => fp.close());
+  }
+
+  setColor(control: AbstractControl, color: ColorString): void {
+    control.setValue(Color.from(color).toRgbString());
+  }
+
+  getColor(control: AbstractControl): any {
+    return Color.from(control.value);
   }
 }

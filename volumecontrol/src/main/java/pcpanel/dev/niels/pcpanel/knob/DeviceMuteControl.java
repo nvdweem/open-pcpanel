@@ -27,7 +27,7 @@ public class DeviceMuteControl implements KnobAction<DeviceMuteControl.DeviceMut
   }
 
   @Override public void buttonDown(Control control, DeviceMuteConfig config) {
-    if (vcService.toggleDeviceMute(config.getDevice(), true)) {
+    if (vcService.toggleDeviceMute(config.getDevice(), config.isOsd())) {
       if (config.isHasMuteColor()) {
         control.setSingleColor(config.getMuteColor());
       }
@@ -39,6 +39,7 @@ public class DeviceMuteControl implements KnobAction<DeviceMuteControl.DeviceMut
   @Data
   public static class DeviceMuteConfig implements ActionConfig {
     @ConfigElement.Dropdown(label = "Device", listSource = "volumecontrol/devices") private String device;
+    @ConfigElement.Checkbox(label = "Show OSD") private boolean osd;
     @ConfigElement.Checkbox(label = "Enable mute color") private boolean hasMuteColor;
     @ConfigElement.Color(label = "Mute color", def = "#F00") private Color muteColor;
 

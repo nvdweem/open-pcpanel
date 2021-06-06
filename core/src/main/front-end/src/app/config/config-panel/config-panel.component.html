@@ -54,7 +54,7 @@
 
     <div *ngSwitchCase="'color'">
       <mat-label>{{elem.label}}</mat-label>
-      <chrome-picker [color]="group.get(elem.name)!.value" (colorChange)="group.get(elem.name)!.setValue($event)" [control]="colorControls[elem.name]"></chrome-picker>
+      <chrome-picker [color]="getColor(group.get(elem.name)!)" (colorChange)="setColor(group.get(elem.name)!, $event)" [control]="colorControls[elem.name]"></chrome-picker>
     </div>
   </ng-container>
 </div>
