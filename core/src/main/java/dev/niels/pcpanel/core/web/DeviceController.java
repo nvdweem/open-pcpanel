@@ -77,7 +77,11 @@ public class DeviceController {
       } else if (f.getType() == Color.class && value != null) {
         value = JsonColor.ColorDeserializer.parseColor(value.toString());
       }
-      ReflectionUtils.setField(f, obj, value);
+      try {
+        ReflectionUtils.setField(f, obj, value);
+      } catch (IllegalArgumentException e) {
+        log.warn("Unable to set {} with {}", f, value);
+      }
     });
 
     var idx = ar.getIdx() - 1 + (ar.getControl().equals("slider") ? device.getType().getButtonCount() : 0);

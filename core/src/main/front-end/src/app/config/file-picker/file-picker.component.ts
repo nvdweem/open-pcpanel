@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, Input, Optional} from '@angular/core
 import {ControlContainer, FormControl} from '@angular/forms';
 import {BehaviorSubject, Observable, ReplaySubject} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import {shareReplay, switchMap, tap} from 'rxjs/operators';
+import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
 
 interface File {
   name: string;
@@ -25,11 +25,13 @@ export class FilePickerComponent {
   constructor(@Optional() private controlContainer: ControlContainer,
               http: HttpClient) {
     this.files = this.folder.pipe(
+      map(f => !f || f === 'null' || f === 'undefined' ? '' : f),
       tap(() => this.loader.next(true)),
       switchMap(path => http.get<File[]>(`api/files`, {params: {path}})),
       tap(() => this.loader.next(false)),
       shareReplay(1),
-    );
+    )
+    ;
   }
 
   @Input()
