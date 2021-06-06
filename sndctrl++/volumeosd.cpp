@@ -4,9 +4,9 @@
 #include <thread>
 
 typedef struct {
-  UINT    nStep;
-  UINT    cSteps;
-  BOOL    bMuted;
+  LONG nStep;
+  LONG cSteps;
+  BOOL bMuted;
 } VOLUME_INFO;
 
 HINSTANCE g_hInstance = NULL;
@@ -104,10 +104,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
     MONITORINFO mi = { sizeof(mi) };
     GetMonitorInfo(hMonitor, &mi);
 
-    SIZE const size = { g_currentVolume.cSteps * DPIScale(3), DPIScale(60) };
 
     auto winWidth = mi.rcMonitor.right - mi.rcMonitor.left;
     auto winHeight = mi.rcMonitor.bottom - mi.rcMonitor.top;
+    SIZE const size = { winWidth / 8, winHeight / 30 };
     POINT const pt = {
         mi.rcMonitor.left + winWidth / 40,
         mi.rcMonitor.top + winHeight / 30
@@ -134,10 +134,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
     // black background (transparency color)
     FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+    LONG ledSize = (rc.right - rc.left - g_currentVolume.cSteps) / g_currentVolume.cSteps;
+    LONG ledHeight = rc.bottom - rc.top;
 
     // Draw LEDs
-    for (UINT i = 0; i < (g_currentVolume.cSteps - 1); i++) {
-      RECT const rcLed = { DPIScale(i * 10), DPIScale(10), DPIScale(i * 10 + 8), rc.bottom - DPIScale(15) };
+    for (LONG i = 0; i < (g_currentVolume.cSteps - 1); i++) {
+      RECT const rcLed = { i + i * ledSize, 0, i + (i+1) * ledSize, ledHeight };
 
       if ((i < g_currentVolume.nStep) && (!g_currentVolume.bMuted)) {
         FillRect(hdc, &rcLed, hbrLit);
