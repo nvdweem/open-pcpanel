@@ -13,3 +13,6 @@ build/
 /settings.mv.db
 /settings.trace.db
 /volumecontrol/src/main/resources/SndCtrl.dll
+
+/sndctrlpp/.vs/
+*.vcxproj*

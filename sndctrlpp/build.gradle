@@ -1,0 +1,58 @@
+plugins {
+  id 'cpp-library'
+  id 'visual-studio'
+}
+
+version = '1.2.1'
+
+library {
+  targetMachines.add(machines.windows.x86_64)
+}
+
+tasks.withType(CppCompile).configureEach {
+  macros.put('NDEBUG', null)
+  macros.put('SNDCTRL_EXPORTS', null)
+  macros.put('_WINDOWS', null)
+  macros.put('_USRDLL', null)
+  macros.put('_WINDLL', null)
+  macros.put('_UNICODE', null)
+  macros.put('UNICODE', null)
+
+  includes.from("C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30037/atlmfc/include")
+
+//  compilerArgs.add '/GS'
+//  compilerArgs.add '/GL'
+//  compilerArgs.add '/W3'
+//  compilerArgs.add '/Gy'
+//  compilerArgs.add '/Zc:wchar_t'
+//  compilerArgs.add '/Zi'
+//  compilerArgs.add '/Gm-'
+  compilerArgs.add '/O2'
+//  compilerArgs.add '/sdl'
+//  compilerArgs.add '/WX-'
+//  compilerArgs.add '/Zc:forScope'
+//  compilerArgs.add '/Gd'
+  compilerArgs.add '/Oi'
+  compilerArgs.add '/MD'
+//  compilerArgs.add '/FC'
+//  compilerArgs.add '/Zc:inline'
+//  compilerArgs.add '/fp:precise'
+  compilerArgs.add '/EHsc'
+//  compilerArgs.add '/nologo'
+  compilerArgs.add '/Ycpch.h'
+  compilerArgs.add '/Yupch.h'
+//  compilerArgs.add '/external:env:"EXTERNAL_INCLUDE"'
+//  compilerArgs.add '/permissive-'
+//  compilerArgs.add '/diagnostics:column'
+//  compilerArgs.add '/errorReport:prompt'
+}
+
+tasks.withType(LinkSharedLibrary).configureEach {
+  linkerArgs.add '/LIBPATH:C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30037/atlmfc/lib/x64/'
+
+  linkerArgs.add 'uxtheme.lib'
+  linkerArgs.add 'gdi32.lib'
+  linkerArgs.add '/LTCG:incremental'
+  linkerArgs.add '/OPT:REF'
+//  linkerArgs.add '/OPT:ICF'
+}

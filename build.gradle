@@ -4,7 +4,7 @@ plugins {
   id "io.freefair.lombok" version "6.0.0-m2"
 }
 
-allprojects {
+configure(subprojects.findAll { it.name != 'sndctrlpp' }) {
   apply plugin: 'java'
   apply plugin: 'io.freefair.lombok'
   apply plugin: 'io.spring.dependency-management'
