@@ -91,6 +91,7 @@ public class ConnectedDevice {
     }
     if (!profiles.isEmpty()) {
       setActiveProfile(profiles.get(0));
+      eventPublisher.publishEvent(new ConnectedDeviceEvent(this));
     }
 
     device.setNonBlocking(false);
@@ -129,11 +130,11 @@ public class ConnectedDevice {
       var knob = data[1] & 0xFF;
       var value = data[2] & 0xFF;
       states.set(knob, value);
-      eventPublisher.publishEvent(new DeviceControlEvent(this, device, DeviceControlEvent.Type.knobRotate, knob, value));
+      eventPublisher.publishEvent(new DeviceControlEvent(this, DeviceControlEvent.Type.knobRotate, knob, value));
     } else if (data[0] == 2) {
       var knob = data[1] & 0xFF;
       var value = data[2] & 0xFF;
-      eventPublisher.publishEvent(new DeviceControlEvent(this, device, DeviceControlEvent.Type.knobPressed, knob, value));
+      eventPublisher.publishEvent(new DeviceControlEvent(this, DeviceControlEvent.Type.knobPressed, knob, value));
     } else {
       log.error("Unknown input: {}", Arrays.toString(data));
     }

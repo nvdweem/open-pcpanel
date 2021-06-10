@@ -6,13 +6,16 @@ import dev.niels.pcpanel.core.device.light.control.GradientConfig;
 import dev.niels.pcpanel.core.device.light.control.IControlConfig;
 import dev.niels.pcpanel.core.device.light.control.StaticConfig;
 import dev.niels.pcpanel.core.device.light.control.VolumeGradientConfig;
+import dev.niels.pcpanel.core.profile.Actions;
 import dev.niels.pcpanel.core.profile.Profile;
 import dev.niels.pcpanel.core.profile.ProfileRepository;
+import dev.niels.pcpanel.plugins.Action;
 import dev.niels.pcpanel.plugins.AnalogAction;
 import dev.niels.pcpanel.plugins.KnobAction;
 import dev.niels.pcpanel.plugins.config.ActionConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import one.util.streamex.EntryStream;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +33,7 @@ public class DeviceHandler {
     switch (event.getType()) {
       case knobPressed: {
         var config = actionConfig.getKnobActions().get(event.getKey());
-        var clazz = config.getActionClass().asSubclass(KnobAction.class);
-        KnobAction<ActionConfig> action = SpringContext.getBean(clazz);
+        var action = getAction(config, KnobAction.class);
         if (event.getValue() == 1) {
           action.buttonDown(buildWrapper(event), config);
         } else {
@@ -41,12 +43,45 @@ public class DeviceHandler {
       }
       case knobRotate: {
         var config = actionConfig.getAnalogActions().get(event.getKey());
-        var clazz = config.getActionClass().asSubclass(AnalogAction.class);
-        AnalogAction<ActionConfig> action = SpringContext.getBean(clazz);
+        var action = getAction(config, AnalogAction.class);
         action.triggerAction(buildWrapper(event), config, event.getValue());
         break;
       }
     }
+  }
+
+  @EventListener
+  public void connectedDeviceEvent(ConnectedDeviceEvent event) {
+    var actions = event.getDevice().getActiveProfile().getActionsConfig();
+    if (event.getControlIdx() == null) {
+      EntryStream.of(actions.getKnobActions()).nonNullKeys().mapKeyValue((i, cfg) -> new ConnectedDeviceEvent(event.getDevice()).setControlIdx(i).setKnobAction(true))
+        .append(EntryStream.of(actions.getAnalogActions()).nonNullKeys().mapKeyValue((i, cfg) -> new ConnectedDeviceEvent(event.getDevice()).setControlIdx(i).setKnobAction(false)))
+        .forEach(this::initControl);
+    } else {
+      initControl(event);
+    }
+  }
+
+  private void initControl(ConnectedDeviceEvent event) {
+    Actions actions = event.getDevice().getActiveProfile().getActionsConfig();
+    ActionConfig cfg;
+    Class<? extends Action> clz;
+    DeviceControlEvent.Type type;
+    if (event.isKnobAction()) {
+      cfg = actions.getKnobActions().get(event.getControlIdx());
+      clz = KnobAction.class;
+      type = DeviceControlEvent.Type.knobPressed;
+    } else {
+      cfg = actions.getAnalogActions().get(event.getControlIdx());
+      clz = AnalogAction.class;
+      type = DeviceControlEvent.Type.knobRotate;
+    }
+    getAction(cfg, clz).init(buildWrapper(new DeviceControlEvent(event.getDevice(), type, event.getControlIdx(), 0)), cfg);
+  }
+
+  private <T extends Action<ActionConfig>> T getAction(ActionConfig config, Class<T> typeClass) {
+    var clazz = config.getActionClass().asSubclass(typeClass);
+    return SpringContext.getBean(clazz);
   }
 
   private ControlWrapper buildWrapper(DeviceControlEvent event) {

@@ -3,6 +3,7 @@ package dev.niels.pcpanel.core.web;
 import dev.niels.pcpanel.core.JsonColor;
 import dev.niels.pcpanel.core.SpringContext;
 import dev.niels.pcpanel.core.device.ConnectedDevice;
+import dev.niels.pcpanel.core.device.ConnectedDeviceEvent;
 import dev.niels.pcpanel.core.device.ConnectedDeviceService;
 import dev.niels.pcpanel.core.device.DeviceControlLightChangedEvent;
 import dev.niels.pcpanel.core.device.light.BreathLightConfig;
@@ -65,7 +66,7 @@ public class DeviceController {
     return true;
   }
 
-  private boolean changeControl(AnalogRequest ar, TriConsumer<Actions, Integer, ActionConfig> setter) throws Exception {
+  private boolean changeControl(AnalogRequest ar, TriConsumer<Actions, Integer, ActionConfig> setter, boolean knobAction) throws Exception {
     var device = deviceService.getDevice(ar.getDevice()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
 
     Action<?> aa = SpringContext.getBean(Class.forName((String) ar.getParams().get("__type")).asSubclass(Action.class));
@@ -86,17 +87,18 @@ public class DeviceController {
 
     var idx = ar.getIdx() - 1 + (ar.getControl().equals("slider") ? device.getType().getButtonCount() : 0);
     setter.accept(device.getActiveProfile().getActionsConfig(), idx, obj);
+    eventPublisher.publishEvent(new ConnectedDeviceEvent(device).setControlIdx(idx).setKnobAction(knobAction));
     return true;
   }
 
   @PostMapping("changeknob")
   public boolean changeKnob(@RequestBody AnalogRequest ar) throws Exception {
-    return changeControl(ar, Actions::setKnobAction);
+    return changeControl(ar, Actions::setKnobAction, true);
   }
 
   @PostMapping("changeanalog")
   public boolean changeAnalog(@RequestBody AnalogRequest ar) throws Exception {
-    return changeControl(ar, Actions::setAnalogAction);
+    return changeControl(ar, Actions::setAnalogAction, false);
   }
 
   private void setControlLight(ConnectedDevice device, LightChangeRequest lcr) {
