@@ -24,8 +24,8 @@ tasks.withType(CppCompile).configureEach {
   compilerArgs.add '/Oi'
   compilerArgs.add '/MD'
   compilerArgs.add '/EHsc'
-  compilerArgs.add '/Ycpch.h'
-  compilerArgs.add '/Yupch.h'
+//  compilerArgs.add '/Ycpch.h'
+//  compilerArgs.add '/Yupch.h'
 }
 
 tasks.withType(LinkSharedLibrary).configureEach {
