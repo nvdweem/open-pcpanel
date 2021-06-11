@@ -13,4 +13,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 })
 public abstract class LightConfig {
   public abstract byte[][] toCommand();
+
+  public abstract LightConfig copy();
 }

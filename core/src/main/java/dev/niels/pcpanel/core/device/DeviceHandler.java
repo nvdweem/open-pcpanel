@@ -7,7 +7,6 @@ import dev.niels.pcpanel.core.device.light.control.IControlConfig;
 import dev.niels.pcpanel.core.device.light.control.StaticConfig;
 import dev.niels.pcpanel.core.device.light.control.VolumeGradientConfig;
 import dev.niels.pcpanel.core.profile.Actions;
-import dev.niels.pcpanel.core.profile.Profile;
 import dev.niels.pcpanel.core.profile.ProfileRepository;
 import dev.niels.pcpanel.plugins.Action;
 import dev.niels.pcpanel.plugins.AnalogAction;
@@ -87,9 +86,8 @@ public class DeviceHandler {
   private ControlWrapper buildWrapper(DeviceControlEvent event) {
     var isSlider = event.getKey() > event.getConnectedDevice().getType().getButtonCount();
     var idx = isSlider ? event.getKey() - event.getConnectedDevice().getType().getButtonCount() : event.getKey();
-    var activeProfile = event.getConnectedDevice().getActiveProfile();
-    var config = activeProfile.getLightConfig();
-    var originalConfig = pr.findById(activeProfile.getId()).map(Profile::init).orElse(activeProfile).getLightConfig();
+    var config = event.getConnectedDevice().getCurrentLights();
+    var originalConfig = event.getConnectedDevice().getActiveProfile().getLightConfig();
 
     ControlWrapper.SingleColorSetter scs;
     ControlWrapper.TwoColorSetter tcs;

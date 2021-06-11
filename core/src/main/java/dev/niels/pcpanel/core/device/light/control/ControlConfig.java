@@ -22,4 +22,6 @@ public abstract class ControlConfig {
   }
 
   protected abstract void doAppend(ByteArrayBuilder builder);
+
+  public abstract ControlConfig copy();
 }

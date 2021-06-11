@@ -8,6 +8,7 @@ import dev.niels.pcpanel.core.helper.ByteArrayBuilder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import one.util.streamex.IntStreamEx;
+import one.util.streamex.StreamEx;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,5 +61,13 @@ public class CustomLightConfig extends LightConfig {
     var bab = new ByteArrayBuilder(prefix);
     cfgs.forEach(c -> c.appendToBuilder(bab));
     return bab.getBytes();
+  }
+
+  @Override public CustomLightConfig copy() {
+    return new CustomLightConfig()
+      .setKnobs(StreamEx.of(knobs).map(ControlConfig::copy).toList())
+      .setSliderLabels(StreamEx.of(sliderLabels).map(ControlConfig::copy).toList())
+      .setSliders(StreamEx.of(sliders).map(ControlConfig::copy).toList())
+      .setLogo(logo.copy());
   }
 }

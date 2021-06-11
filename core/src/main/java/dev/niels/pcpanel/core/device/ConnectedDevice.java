@@ -35,6 +35,7 @@ public class ConnectedDevice {
   @Getter private String id;
   @Getter @Setter private List<Profile> profiles;
   @Getter private Profile activeProfile;
+  @Getter private LightConfig currentLights;
 
   public ConnectedDevice init(HidDevice device) {
     this.device = device;
@@ -58,18 +59,16 @@ public class ConnectedDevice {
 
   public void setActiveProfile(Profile p) {
     activeProfile = p;
-    setConfig(p.getLightConfig());
+    setCurrentLights(p.getLightConfig());
   }
 
-  public void setConfig(LightConfig config) {
-    if (config == null) {
-      config = new StaticLightConfig().setColor(Color.black);
-    }
-    sendCommand(config.toCommand());
+  public void setCurrentLights(LightConfig currentLights) {
+    this.currentLights = currentLights == null ? new StaticLightConfig().setColor(Color.black) : currentLights.copy();
+    sendCommand(this.currentLights.toCommand());
   }
 
   public void sendCurrentConfig() {
-    sendCommand(activeProfile.getLightConfig().toCommand());
+    sendCommand(currentLights.toCommand());
   }
 
   @EventListener
