@@ -3,16 +3,20 @@
 #include "helper.h"
 #include "volumeosd.h"
 
-DeviceAddedCb* deviceAdded;
+DeviceChangedCb* deviceChanged;
 DeviceRemovedCb* deviceRemoved;
-SessionAddedCb* sessionAdded;
+SessionChangedCb* sessionChanged;
 SessionRemovedCb* sessionRemoved;
+StringCallback* debug;
+StringCallback* info;
 
 CComPtr<IMMDeviceEnumerator> pEnumerator;
 unordered_map<wstring, CComPtr<IMMDevice>> devices;
-unordered_map<wstring, CComPtr<IMMDevice>> deviceSessionManagers;
+unordered_map<wstring, pair<CComPtr<DeviceVolumeListener>, CComPtr<SessionListener>>> deviceSessionManagers;
 unordered_map<DWORD, CComPtr<IAudioSessionControl>> pid2control;
+unordered_map<DWORD, CComPtr<AudioSessionListener>> pid2listener;
 unordered_map<wstring, list<CComPtr<IAudioSessionControl>>> name2control;
+CComPtr<DeviceListener> pDeviceListener;
 
 void init() {
   if (CoInitialize(nullptr) != S_OK) {
@@ -26,14 +30,29 @@ void init() {
     cerr << "Unable to create device enumerator, more will fail later :(" << endl;
   }
   pEnumerator = enumerator;
+  pDeviceListener = new DeviceListener(pEnumerator);
+
 	cout << "Device enumerator created" << endl;
 }
 
 void deinit() {
+  pDeviceListener->Stop();
+  for (auto& it : pid2listener) {
+    it.second->Stop();
+  }
+
+  for (auto& it : deviceSessionManagers) {
+    it.second.first->Stop();
+    it.second.second->Stop();
+  }
+
   devices.clear();
   name2control.clear();
   pid2control.clear();
   deviceSessionManagers.clear();
+
+  pEnumerator->UnregisterEndpointNotificationCallback(pDeviceListener);
+  pDeviceListener.Release();
 }
 
 void SessionAdded(CComPtr<IAudioSessionControl> session) {
@@ -47,10 +66,7 @@ void SessionAdded(CComPtr<IAudioSessionControl> session) {
     }
     name2control[processName].push_back(session);
     pid2control.insert({ processId, session });
-    sessionAdded(processId, &processName[0]);
-
-    CComPtr<AudioSessionListener> pListener(new AudioSessionListener(session, processId, processName));
-    session->RegisterAudioSessionNotification(pListener);
+    pid2listener.insert({ processId, new AudioSessionListener(session, processId, processName) });
   }
 }
 
@@ -64,50 +80,60 @@ void SessionRemoved(CComPtr<IAudioSessionControl>& ctrl, DWORD pid, wstring& nam
     }
   }
 
+  auto listener = pid2listener.find(pid);
+  if (listener != pid2listener.end()) {
+    listener->second->Stop();
+    pid2listener.erase(listener);
+  }
+
   sessionRemoved(pid);
 }
 
-SNDCTRL_API void getForegroundProcess(StringCallback cb) {
-  DWORD procId;
-  GetWindowThreadProcessId(GetForegroundWindow(), &procId);
-  cb(&ProcessIdToName(procId)[0]);
-}
-
 extern "C" SNDCTRL_API void init(
-  DeviceAddedCb deviceAddedCb, DeviceRemovedCb deviceRemovedCb,
-  SessionAddedCb sessionAddedCb, SessionRemovedCb sessionRemovedCb){
-  deviceAdded = deviceAddedCb;
+  DeviceChangedCb deviceChangedCb, DeviceRemovedCb deviceRemovedCb,
+  SessionChangedCb sessionChangedCb, SessionRemovedCb sessionRemovedCb,
+  StringCallback debugCb, StringCallback infoCb) {
+  deviceChanged = deviceChangedCb;
   deviceRemoved = deviceRemovedCb;
-  sessionAdded = sessionAddedCb;
+  sessionChanged = sessionChangedCb;
   sessionRemoved = sessionRemovedCb;
-
+  debug = debugCb;
+  info = infoCb;
 
   auto pDevices = EnumAudioEndpoints(*pEnumerator);
   auto count = GetCount(*pDevices);
 	for (UINT idx = 0; idx < count; idx++) {
     auto pDevice = DeviceFromCollection(*pDevices, idx);
-    auto nameAndId = DeviceNameId(*pDevice);
-    wstring deviceId(nameAndId.id.get());
-    devices.insert({ deviceId, pDevice });
-
-    deviceAdded(nameAndId.name.get(), nameAndId.id.get());
-
-    auto pSessionManager = Activate(*pDevice);
-
-    // Register listener
-    CComPtr<SessionListener> pSessionListener(new SessionListener(pSessionManager, wstring(nameAndId.id.get())));
-    pSessionManager->RegisterSessionNotification(pSessionListener);
-    deviceSessionManagers.insert({ deviceId, pDevice });
-
-    // Get current sessions
-    auto pSessionList = GetSessionEnumerator(*pSessionManager);
-    auto sessionCount = GetCount(*pSessionList);
-    for (int index = 0; index < sessionCount; index++) {
-      auto session = GetSession(*pSessionList, index);
-      SessionAdded(session);
-    }
+    DeviceAdded(pDevice);
 	}
 }
+
+void DeviceAdded(CComPtr<IMMDevice> pDevice) {
+  auto nameAndId = DeviceNameId(*pDevice);
+  wstring deviceId(nameAndId.id.get());
+  devices.insert({ deviceId, pDevice });
+
+  float volume = 0;
+  BOOL muted = 0;
+  auto volumeCtrl = GetVolumeControl(*pDevice);
+  volumeCtrl->GetMasterVolumeLevelScalar(&volume);
+  volumeCtrl->GetMute(&muted);
+  deviceChanged(nameAndId.name.get(), nameAndId.id.get(), volume, muted);
+
+  auto pSessionManager = Activate(*pDevice);
+
+  // Register Session listener
+  deviceSessionManagers.insert({ deviceId, {new DeviceVolumeListener(pDevice), new SessionListener(pSessionManager, wstring(nameAndId.id.get()))} });
+
+  // Get current sessions
+  auto pSessionList = GetSessionEnumerator(*pSessionManager);
+  auto sessionCount = GetCount(*pSessionList);
+  for (int index = 0; index < sessionCount; index++) {
+    auto session = GetSession(*pSessionList, index);
+    SessionAdded(session);
+  }
+}
+
 
 
 
@@ -127,19 +153,7 @@ void ShowVolume(CComPtr<IAudioEndpointVolume>& volume, bool osd) {
   }
 }
 
-extern "C" SNDCTRL_API bool toggleDeviceMute(const LPWSTR id, bool osd) {
-  BOOL isMute = false;
-  if (devices.find(id) != devices.end()) {
-    auto control = GetVolumeControl(*devices[id]);
-    control->GetMute(&isMute);
-    control->SetMute(!isMute, nullptr);
-
-    ShowVolume(control, osd);
-  }
-  return !isMute;
-}
-
-void setDeviceVolume(const LPWSTR id, int volume, bool osd) {
+extern "C" SNDCTRL_API void setDeviceVolume(const LPWSTR id, int volume, bool osd) {
   if (devices.find(id) != devices.end()) {
     auto control = GetVolumeControl(*devices[id]);
     control->SetMasterVolumeLevelScalar(volume / 100.0f, nullptr);
@@ -147,7 +161,7 @@ void setDeviceVolume(const LPWSTR id, int volume, bool osd) {
   }
 }
 
-void setProcessVolume(const LPWSTR name, int volume, bool osd) {
+extern "C" SNDCTRL_API void setProcessVolume(const LPWSTR name, int volume, bool osd) {
   wstring wname(name);
   if (name2control.find(wname) != name2control.end()) {
     for (CComPtr<IAudioSessionControl>& session : name2control[wname]) {
@@ -160,16 +174,7 @@ void setProcessVolume(const LPWSTR name, int volume, bool osd) {
   }
 }
 
-wstring GetProcessName(DWORD procId) {
-  DWORD buffSize = MAX_PATH;
-  WCHAR buffer[MAX_PATH] = { 0 };
-  HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, procId);
-  QueryFullProcessImageNameW(hProc, NULL, buffer, &buffSize);
-  CloseHandle(hProc);
-  return wstring(buffer);
-}
-
-void setFgProcessVolume(int volume, bool osd) {
+extern "C" SNDCTRL_API void setFgProcessVolume(int volume, bool osd) {
   DWORD procId;
   GetWindowThreadProcessId(GetForegroundWindow(), &procId);
 
@@ -198,12 +203,109 @@ void setFgProcessVolume(int volume, bool osd) {
   }
 }
 
+extern "C" SNDCTRL_API void setDeviceMute(const LPWSTR id, bool muted, bool osd) {
+  if (devices.find(id) != devices.end()) {
+    auto control = GetVolumeControl(*devices[id]);
+    control->SetMute(muted, nullptr);
+    ShowVolume(control, osd);
+  }
+}
+
+extern "C" SNDCTRL_API void setProcessMute(const LPWSTR name, bool muted, bool osd) {
+  cout << "Set process mute " << name << muted << endl;
+}
+
+extern "C" SNDCTRL_API void setActiveDevice(const LPWSTR id, bool osd) {
+  cout << "Set active device " << id << endl;
+}
+
+
+DeviceListener::DeviceListener(CComPtr<IMMDeviceEnumerator> e) : pEnumerator(e) {
+  e->RegisterEndpointNotificationCallback(this);
+}
+
+void DeviceListener::Stop() {
+  pEnumerator->UnregisterEndpointNotificationCallback(this);
+}
+
+
+HRESULT STDMETHODCALLTYPE DeviceListener::OnDeviceAdded(LPCWSTR pwstrDeviceId) {
+  CComPtr<IMMDevice> pDevice;
+  pEnumerator->GetDevice(pwstrDeviceId, &pDevice);
+  DeviceAdded(pDevice);
+  return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE DeviceListener::OnDeviceRemoved(LPCWSTR pwstrDeviceId) {
+  auto entry = deviceSessionManagers.find(pwstrDeviceId);
+  if (entry != deviceSessionManagers.end()) {
+    entry->second.first->Stop();
+    entry->second.second->Stop();
+    deviceSessionManagers.erase(entry);
+  }
+  return S_OK;
+}
+
+DeviceVolumeListener::DeviceVolumeListener(CComPtr<IMMDevice> pDevice)
+  : pDevice(pDevice), pVolume(GetVolumeControl(*pDevice)) {
+  pVolume->RegisterControlChangeNotify(this);
+}
+
+void DeviceVolumeListener::Stop() {
+  pVolume->UnregisterControlChangeNotify(this);
+}
+
+HRESULT STDMETHODCALLTYPE DeviceVolumeListener::OnNotify(PAUDIO_VOLUME_NOTIFICATION_DATA pNotify) {
+  LPWSTR pId = nullptr;
+  pDevice->GetId(&pId);
+  deviceChanged(L"", pId, pNotify->fMasterVolume * 100, pNotify->bMuted);
+  return S_OK;
+}
+
+
 HRESULT SessionListener::OnSessionCreated(IAudioSessionControl* pNewSession) {
   if (pNewSession) {
     CComPtr<IAudioSessionControl> ptr(pNewSession);
     SessionAdded(ptr);
   }
   return S_OK;
+}
+
+AudioSessionListener::AudioSessionListener(CComPtr<IAudioSessionControl> sessionControl, DWORD pid, wstring processName)
+  : sessionControl(sessionControl), pid(pid), processName(processName), icon(), volume(0), muted(0) {
+  LPWSTR icon = NULL;
+  float level = 0;
+  sessionControl->GetIconPath(&icon);
+  this->icon = icon;
+
+  CComQIPtr<ISimpleAudioVolume> cc = sessionControl.p;
+  cc->GetMasterVolume(&level);
+  cc->GetMute(&muted);
+  volume = level * 100;
+  SendUpdate();
+
+  sessionControl->RegisterAudioSessionNotification(this);
+}
+
+void AudioSessionListener::Stop() {
+  sessionControl->UnregisterAudioSessionNotification(this);
+}
+
+HRESULT STDMETHODCALLTYPE AudioSessionListener::OnIconPathChanged(LPCWSTR NewIconPath, LPCGUID EventContext) {
+  icon = NewIconPath;
+  SendUpdate();
+  return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE AudioSessionListener::OnSimpleVolumeChanged(float NewVolume, BOOL NewMute, LPCGUID EventContext) {
+  volume = NewVolume * 100;
+  muted = NewMute;
+  SendUpdate();
+  return S_OK;
+}
+
+void AudioSessionListener::SendUpdate() {
+  sessionChanged(pid, &processName[0], &icon[0], volume, muted);
 }
 
 HRESULT __stdcall AudioSessionListener::OnStateChanged(AudioSessionState NewState) {

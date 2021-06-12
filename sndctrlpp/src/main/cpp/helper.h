@@ -35,3 +35,5 @@ wstring                             ProcessIdToName(DWORD processId);
 
 CComPtr<IAudioEndpointVolume>       GetVolumeControl(IMMDevice& device);
 CComPtr<ISimpleAudioVolume>         GetVolumeControl(IAudioSessionControl& session);
+
+wstring                             GetProcessName(DWORD procId);

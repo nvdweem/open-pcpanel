@@ -12,23 +12,28 @@ void deinit();
 void ProcessIdToName(DWORD processId, LPWSTR buffer, DWORD bufferSize);
 
 using StringCallback = void(const LPWSTR);
-using DeviceAddedCb = void(const LPWSTR, const LPWSTR);
+using DeviceChangedCb = void(const LPWSTR name, const LPWSTR id, int volume, bool muted);
 using DeviceRemovedCb = void(const LPWSTR);
-using SessionAddedCb = void(const DWORD, const LPWSTR);
+using SessionChangedCb = void(const DWORD pid, const LPWSTR name, const LPWSTR icon, int volume, bool muted);
 using SessionRemovedCb = void(const DWORD);
 
 extern "C" SNDCTRL_API void init(
-	DeviceAddedCb deviceAdded, DeviceRemovedCb deviceRemoved, 
-	SessionAddedCb sessionAdded, SessionRemovedCb sessionRemoved);
+  DeviceChangedCb deviceChanged, DeviceRemovedCb deviceRemoved,
+  SessionChangedCb sessionChanged, SessionRemovedCb sessionRemoved,
+  StringCallback debug, StringCallback info);
 
-extern "C" SNDCTRL_API bool toggleDeviceMute(const LPWSTR id, bool osd);
+
+// Volume actions
 extern "C" SNDCTRL_API void setDeviceVolume(const LPWSTR id, int volume, bool osd);
 extern "C" SNDCTRL_API void setProcessVolume(const LPWSTR name, int volume, bool osd);
 extern "C" SNDCTRL_API void setFgProcessVolume(int volume, bool osd);
 
+// State actions
+extern "C" SNDCTRL_API void setDeviceMute(const LPWSTR id, bool muted, bool osd);
+extern "C" SNDCTRL_API void setProcessMute(const LPWSTR name, bool muted, bool osd);
+extern "C" SNDCTRL_API void setActiveDevice(const LPWSTR id, bool osd);
 
-extern "C" SNDCTRL_API void getForegroundProcess(StringCallback cb);
-
+void DeviceAdded(CComPtr<IMMDevice> pDevice);
 
 
 /// <summary>
@@ -73,15 +78,54 @@ public:
   }
 };
 
+class DeviceListener : public Listener, public IMMNotificationClient {
+private:
+  CComPtr<IMMDeviceEnumerator> pEnumerator;
+public:
+  DeviceListener(CComPtr<IMMDeviceEnumerator> e);
+  void Stop();
+
+  virtual HRESULT STDMETHODCALLTYPE OnDeviceStateChanged(LPCWSTR pwstrDeviceId, DWORD dwNewState) { return S_OK; }
+  virtual HRESULT STDMETHODCALLTYPE OnDefaultDeviceChanged(EDataFlow flow, ERole role, LPCWSTR pwstrDefaultDeviceId) { return S_OK; }
+  virtual HRESULT STDMETHODCALLTYPE OnPropertyValueChanged(LPCWSTR pwstrDeviceId, const PROPERTYKEY key) { return S_OK; }
+  virtual HRESULT STDMETHODCALLTYPE OnDeviceAdded(LPCWSTR pwstrDeviceId);
+  virtual HRESULT STDMETHODCALLTYPE OnDeviceRemoved(LPCWSTR pwstrDeviceId);
+
+  HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppv) override { return Listener::QueryInterface(riid, ppv); }
+  ULONG STDMETHODCALLTYPE AddRef() override { return Listener::AddRef(); }
+  ULONG STDMETHODCALLTYPE Release() override { return Listener::Release(); }
+};
+
+class DeviceVolumeListener : public Listener, public IAudioEndpointVolumeCallback {
+private:
+  CComPtr<IMMDevice> pDevice;
+  CComPtr<IAudioEndpointVolume> pVolume;
+public:
+  DeviceVolumeListener(CComPtr<IMMDevice> pDevice);
+  void Stop();
+
+  virtual HRESULT STDMETHODCALLTYPE OnNotify(PAUDIO_VOLUME_NOTIFICATION_DATA pNotify);
+
+  HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppv) override { return Listener::QueryInterface(riid, ppv); }
+  ULONG STDMETHODCALLTYPE AddRef() override { return Listener::AddRef(); }
+  ULONG STDMETHODCALLTYPE Release() override { return Listener::Release(); }
+};
+
+
 class SessionListener : public Listener, public IAudioSessionNotification {
 private:
   CComPtr<IAudioSessionManager2> sessionManager;
   wstring deviceId;
 
 public:
-  SessionListener(CComPtr<IAudioSessionManager2> sessionManager, wstring deviceId) : sessionManager(sessionManager), deviceId(deviceId) {}
+  SessionListener(CComPtr<IAudioSessionManager2> sessionManager, wstring deviceId) : sessionManager(sessionManager), deviceId(deviceId) {
+    sessionManager->RegisterSessionNotification(this);
+  }
 
   HRESULT STDMETHODCALLTYPE OnSessionCreated(IAudioSessionControl* pNewSession);
+  void Stop() {
+    sessionManager->UnregisterSessionNotification(this);
+  }
 
   HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppv) override { return Listener::QueryInterface(riid, ppv); }
   ULONG STDMETHODCALLTYPE AddRef() override { return Listener::AddRef(); }
@@ -93,19 +137,25 @@ private:
   CComPtr<IAudioSessionControl> sessionControl;
   DWORD pid;
   wstring processName;
+  wstring icon;
+  int volume;
+  BOOL muted;
 
 public:
-  AudioSessionListener(CComPtr<IAudioSessionControl> sessionControl, DWORD pid, wstring processName) : sessionControl(sessionControl), pid(pid), processName(processName) {}
+  AudioSessionListener(CComPtr<IAudioSessionControl> sessionControl, DWORD pid, wstring processName);
+  void Stop();
 
   virtual HRESULT STDMETHODCALLTYPE OnDisplayNameChanged(LPCWSTR NewDisplayName, LPCGUID EventContext) { return S_OK; }
-  virtual HRESULT STDMETHODCALLTYPE OnIconPathChanged(LPCWSTR NewIconPath, LPCGUID EventContext) { return S_OK; }
-  virtual HRESULT STDMETHODCALLTYPE OnSimpleVolumeChanged(float NewVolume, BOOL NewMute, LPCGUID EventContext) { return S_OK; }
+  virtual HRESULT STDMETHODCALLTYPE OnIconPathChanged(LPCWSTR NewIconPath, LPCGUID EventContext);
   virtual HRESULT STDMETHODCALLTYPE OnChannelVolumeChanged(DWORD ChannelCount, float NewChannelVolumeArray[], DWORD ChangedChannel, LPCGUID EventContext) { return S_OK; }
   virtual HRESULT STDMETHODCALLTYPE OnGroupingParamChanged(LPCGUID NewGroupingParam, LPCGUID EventContext) { return S_OK; }
   virtual HRESULT STDMETHODCALLTYPE OnSessionDisconnected(AudioSessionDisconnectReason DisconnectReason) { return S_OK; }
+  virtual HRESULT STDMETHODCALLTYPE OnSimpleVolumeChanged(float NewVolume, BOOL NewMute, LPCGUID EventContext);
   virtual HRESULT STDMETHODCALLTYPE OnStateChanged(AudioSessionState NewState);
 
   HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppv) override { return Listener::QueryInterface(riid, ppv); }
   ULONG STDMETHODCALLTYPE AddRef() override { return Listener::AddRef(); }
   ULONG STDMETHODCALLTYPE Release() override { return Listener::Release(); }
+private:
+  void SendUpdate();
 };
