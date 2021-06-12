@@ -12,9 +12,9 @@ void deinit();
 void ProcessIdToName(DWORD processId, LPWSTR buffer, DWORD bufferSize);
 
 using StringCallback = void(const LPWSTR);
-using DeviceChangedCb = void(const LPWSTR name, const LPWSTR id, int volume, bool muted);
+using DeviceChangedCb = void(const LPWSTR name, const LPWSTR id, int volume, int muted);
 using DeviceRemovedCb = void(const LPWSTR);
-using SessionChangedCb = void(const DWORD pid, const LPWSTR name, const LPWSTR icon, int volume, bool muted);
+using SessionChangedCb = void(const DWORD pid, const LPWSTR name, const LPWSTR icon, int volume, int muted);
 using SessionRemovedCb = void(const DWORD);
 
 extern "C" SNDCTRL_API void init(
@@ -29,7 +29,7 @@ extern "C" SNDCTRL_API void setProcessVolume(const LPWSTR name, int volume, bool
 extern "C" SNDCTRL_API void setFgProcessVolume(int volume, bool osd);
 
 // State actions
-extern "C" SNDCTRL_API void setDeviceMute(const LPWSTR id, bool muted, bool osd);
+extern "C" SNDCTRL_API void setDeviceMute(const LPWSTR id, int muted, int osd);
 extern "C" SNDCTRL_API void setProcessMute(const LPWSTR name, bool muted, bool osd);
 extern "C" SNDCTRL_API void setActiveDevice(const LPWSTR id, bool osd);
 

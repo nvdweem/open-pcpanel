@@ -18,16 +18,22 @@ public interface VolumeControlLib extends Library {
 
   void init(DeviceChanged changed, StringCallback removed, SessionChanged sessChanged, SessionRemoved sessRemoved, StringCallback debug, StringCallback info);
 
-  void setDeviceVolume(WString id, int volume, boolean osd);
+  // Volume actions
+  void setDeviceVolume(WString id, int volume, int osd);
 
-  void setProcessVolume(WString name, int volume, boolean osd);
+  void setProcessVolume(WString name, int volume, int osd);
 
-  void setFgProcessVolume(int volume, boolean osd);
+  void setFgProcessVolume(int volume, int osd);
 
-  boolean toggleDeviceMute(WString volume, boolean osd);
+  // State actions
+  void setDeviceMute(WString id, int muted, int osd);
+
+  void setProcessMute(WString name, int muted, int osd);
+
+  void setActiveDevice(WString id, int osd);
 
   interface DeviceChanged extends Callback {
-    void invoke(WString name, WString id, int volume, boolean muted);
+    void invoke(WString name, WString id, int volume, int muted);
   }
 
   interface StringCallback extends Callback {
@@ -35,7 +41,7 @@ public interface VolumeControlLib extends Library {
   }
 
   interface SessionChanged extends Callback {
-    void invoke(long processId, WString name, WString icon, int volume, boolean muted);
+    void invoke(long processId, WString name, WString icon, int volume, int muted);
   }
 
   interface SessionRemoved extends Callback {

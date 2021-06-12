@@ -2,6 +2,7 @@ package pcpanel.dev.niels.pcpanel.natives;
 
 import com.sun.jna.WString;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class VolumeControlService {
   @Getter private static Map<String, VolumeDevice> devices = new HashMap<>();
   @Getter private static Map<Long, VolumeSession> sessions = new HashMap<>();
@@ -24,27 +26,33 @@ public class VolumeControlService {
     );
   }
 
-  private static void sessionChanged(long pid, WString process, WString icon, int volume, boolean muted) {
+  private static void sessionChanged(long pid, WString process, WString icon, int volume, int muted) {
     var session = sessions.computeIfAbsent(pid, VolumeSession::new);
     session.setProcess(process.toString());
     session.setIcon(icon.toString());
     session.setVolume(volume);
-    session.setMuted(muted);
+    session.setMuted(muted != 0);
   }
 
-  private static void deviceChanged(WString name, WString id, int volume, boolean muted) {
+  private static void deviceChanged(WString name, WString id, int volume, int muted) {
     var device = devices.computeIfAbsent(id.toString(), VolumeDevice::new);
     device.setName(name.toString());
     device.setVolume(volume);
-    device.setMuted(muted);
+    device.setMuted(muted != 0);
   }
 
   public void setFgVolume(int volume, boolean osd) {
-    VolumeControlLib.INSTANCE.setFgProcessVolume(volume, osd);
+    VolumeControlLib.INSTANCE.setFgProcessVolume(volume, osd ? 1 : 0);
   }
 
   public boolean toggleDeviceMute(String device, boolean osd) {
-    return VolumeControlLib.INSTANCE.toggleDeviceMute(new WString(device), osd);
+    var dev = devices.get(device);
+    if (dev != null) {
+      var muted = dev.isMuted();
+      VolumeControlLib.INSTANCE.setDeviceMute(new WString(device), muted ? 0 : 1, osd ? 1 : 0);
+      return !muted;
+    }
+    return false;
   }
 
 }

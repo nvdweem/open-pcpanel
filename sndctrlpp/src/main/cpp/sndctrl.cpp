@@ -203,11 +203,12 @@ extern "C" SNDCTRL_API void setFgProcessVolume(int volume, bool osd) {
   }
 }
 
-extern "C" SNDCTRL_API void setDeviceMute(const LPWSTR id, bool muted, bool osd) {
+extern "C" SNDCTRL_API void setDeviceMute(const LPWSTR id, int muted, int osd) {
   if (devices.find(id) != devices.end()) {
     auto control = GetVolumeControl(*devices[id]);
-    control->SetMute(muted, nullptr);
-    ShowVolume(control, osd);
+    BOOL NewMuted = muted != 0 ? 1 : 0;
+    control->SetMute(NewMuted, nullptr);
+    ShowVolume(control, osd == -1);
   }
 }
 
