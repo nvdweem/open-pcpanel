@@ -7,6 +7,7 @@ DeviceChangedCb* deviceChanged;
 DeviceRemovedCb* deviceRemoved;
 SessionChangedCb* sessionChanged;
 SessionRemovedCb* sessionRemoved;
+DefaultDeviceChangedCb* defaultDeviceChanged;
 StringCallback* debug;
 StringCallback* info;
 
@@ -92,11 +93,13 @@ void SessionRemoved(CComPtr<IAudioSessionControl>& ctrl, DWORD pid, wstring& nam
 extern "C" SNDCTRL_API void init(
   DeviceChangedCb deviceChangedCb, DeviceRemovedCb deviceRemovedCb,
   SessionChangedCb sessionChangedCb, SessionRemovedCb sessionRemovedCb,
+  DefaultDeviceChangedCb defaultDeviceChangedCb,
   StringCallback debugCb, StringCallback infoCb) {
   deviceChanged = deviceChangedCb;
   deviceRemoved = deviceRemovedCb;
   sessionChanged = sessionChangedCb;
   sessionRemoved = sessionRemovedCb;
+  defaultDeviceChanged = defaultDeviceChangedCb;
   debug = debugCb;
   info = infoCb;
 
@@ -106,6 +109,24 @@ extern "C" SNDCTRL_API void init(
     auto pDevice = DeviceFromCollection(*pDevices, idx);
     DeviceAdded(pDevice);
 	}
+
+  for (int dataflow = eRender; dataflow < eAll; dataflow++) {
+    EDataFlow df = (EDataFlow) dataflow;
+    for (int role = 0; role < ERole_enum_count; role++) {
+      CComPtr<IMMDevice> pDevice = nullptr;
+      ERole rl = (ERole) role;
+      pEnumerator->GetDefaultAudioEndpoint(df, rl, &pDevice);
+
+      if (pDevice) {
+        LPWSTR id = nullptr;
+        pDevice->GetId(&id);
+
+        co_ptr<WCHAR> pId(id);
+        cout << df << " & " << rl << endl;
+        defaultDeviceChanged(id, dataflow, role);
+      }
+    }
+  }
 }
 
 void DeviceAdded(CComPtr<IMMDevice> pDevice) {
@@ -118,7 +139,8 @@ void DeviceAdded(CComPtr<IMMDevice> pDevice) {
   auto volumeCtrl = GetVolumeControl(*pDevice);
   volumeCtrl->GetMasterVolumeLevelScalar(&volume);
   volumeCtrl->GetMute(&muted);
-  deviceChanged(nameAndId.name.get(), nameAndId.id.get(), volume, muted);
+
+  deviceChanged(nameAndId.name.get(), nameAndId.id.get(), volume, muted, getDataFlow(*pDevice));
 
   auto pSessionManager = Activate(*pDevice);
 
@@ -208,12 +230,23 @@ extern "C" SNDCTRL_API void setDeviceMute(const LPWSTR id, int muted, int osd) {
     auto control = GetVolumeControl(*devices[id]);
     BOOL NewMuted = muted != 0 ? 1 : 0;
     control->SetMute(NewMuted, nullptr);
-    ShowVolume(control, osd == -1);
+    ShowVolume(control, osd != 0);
   }
 }
 
-extern "C" SNDCTRL_API void setProcessMute(const LPWSTR name, bool muted, bool osd) {
-  cout << "Set process mute " << name << muted << endl;
+extern "C" SNDCTRL_API void setProcessMute(const LPWSTR name, int muted, int osd) {
+  BOOL NewMute = muted != 0 ? 1 : 0;
+  float volume = 0;
+  for (auto& p : name2control) {
+    if (p.first.find(name) != -1) {
+      for (auto& sess : p.second) {
+        CComQIPtr<ISimpleAudioVolume> cc(sess.p);
+        cc->SetMute(NewMute, nullptr);
+        cc->GetMasterVolume(&volume);
+      }
+    }
+  }
+  ShowVolume(volume * 100, muted != 0, osd != 0);
 }
 
 extern "C" SNDCTRL_API void setActiveDevice(const LPWSTR id, bool osd) {
@@ -228,6 +261,13 @@ DeviceListener::DeviceListener(CComPtr<IMMDeviceEnumerator> e) : pEnumerator(e) 
 void DeviceListener::Stop() {
   pEnumerator->UnregisterEndpointNotificationCallback(this);
 }
+
+HRESULT STDMETHODCALLTYPE DeviceListener::OnDefaultDeviceChanged(EDataFlow flow, ERole role, LPCWSTR pwstrDefaultDeviceId) {
+  wstring tempStr(pwstrDefaultDeviceId);
+  defaultDeviceChanged(&tempStr[0], flow, role);
+  return S_OK;
+}
+
 
 
 HRESULT STDMETHODCALLTYPE DeviceListener::OnDeviceAdded(LPCWSTR pwstrDeviceId) {
@@ -259,7 +299,8 @@ void DeviceVolumeListener::Stop() {
 HRESULT STDMETHODCALLTYPE DeviceVolumeListener::OnNotify(PAUDIO_VOLUME_NOTIFICATION_DATA pNotify) {
   LPWSTR pId = nullptr;
   pDevice->GetId(&pId);
-  deviceChanged(L"", pId, pNotify->fMasterVolume * 100, pNotify->bMuted);
+  co_ptr<WCHAR> ppId(pId);
+  deviceChanged(L"", pId, pNotify->fMasterVolume * 100, pNotify->bMuted, getDataFlow(*pDevice));
   return S_OK;
 }
 
@@ -278,6 +319,7 @@ AudioSessionListener::AudioSessionListener(CComPtr<IAudioSessionControl> session
   float level = 0;
   sessionControl->GetIconPath(&icon);
   this->icon = icon;
+  co_ptr<WCHAR> pIcon(icon);
 
   CComQIPtr<ISimpleAudioVolume> cc = sessionControl.p;
   cc->GetMasterVolume(&level);

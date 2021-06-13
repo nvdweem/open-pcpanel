@@ -21,7 +21,6 @@ CComPtr<IMMDevice> DeviceFromCollection(IMMDeviceCollection& collection, UINT id
 
 SDeviceNameId DeviceNameId(IMMDevice& device) {
 	LPWSTR pwszID = NULL;
-
 	device.GetId(&pwszID);
 
 	IPropertyStore* pProps = NULL;
@@ -105,6 +104,14 @@ CComPtr<ISimpleAudioVolume> GetVolumeControl(IAudioSessionControl& session) {
 	CComPtr<ISimpleAudioVolume> pControl;
 	auto hr = session.QueryInterface(__uuidof(ISimpleAudioVolume), (void**)&pControl);
 	return pControl;
+}
+
+EDataFlow getDataFlow(IMMDevice& device) {
+  CComPtr<IMMEndpoint> pEndPoint = NULL;
+  device.QueryInterface(__uuidof(IMMEndpoint), (void**)&pEndPoint);
+  EDataFlow dataflow = eRender;
+  pEndPoint->GetDataFlow(&dataflow);
+  return dataflow;
 }
 
 wstring GetProcessName(DWORD procId) {

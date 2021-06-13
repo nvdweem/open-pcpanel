@@ -10,13 +10,15 @@ import one.util.streamex.StreamEx;
 public interface VolumeControlLib extends Library {
   VolumeControlLib INSTANCE = Native.load("sndctrlpp", VolumeControlLib.class);
 
-  default void initialize(DeviceChanged changed, StringCallback removed, SessionChanged sessChanged, SessionRemoved sessRemoved, StringCallback debug, StringCallback info) {
+  default void initialize(DeviceChanged changed, StringCallback removed, SessionChanged sessChanged, SessionRemoved sessRemoved, DefaultDeviceChanged defaultDeviceChanged,
+                          StringCallback debug, StringCallback info) {
     CallbackThreadInitializer thread = new CallbackThreadInitializer(true, false, "VolumeControlLibCB");
-    StreamEx.of(changed, removed, sessChanged, sessRemoved, debug, info).forEach(cb -> Native.setCallbackThreadInitializer(cb, thread));
-    init(changed, removed, sessChanged, sessRemoved, debug, info);
+    StreamEx.of(changed, removed, sessChanged, sessRemoved, defaultDeviceChanged, debug, info).forEach(cb -> Native.setCallbackThreadInitializer(cb, thread));
+    init(changed, removed, sessChanged, sessRemoved, defaultDeviceChanged, debug, info);
   }
 
-  void init(DeviceChanged changed, StringCallback removed, SessionChanged sessChanged, SessionRemoved sessRemoved, StringCallback debug, StringCallback info);
+  void init(DeviceChanged changed, StringCallback removed, SessionChanged sessChanged, SessionRemoved sessRemoved, DefaultDeviceChanged defaultDeviceChanged,
+            StringCallback debug, StringCallback info);
 
   // Volume actions
   void setDeviceVolume(WString id, int volume, int osd);
@@ -33,7 +35,11 @@ public interface VolumeControlLib extends Library {
   void setActiveDevice(WString id, int osd);
 
   interface DeviceChanged extends Callback {
-    void invoke(WString name, WString id, int volume, int muted);
+    void invoke(WString name, WString id, int volume, int muted, int type);
+  }
+
+  interface DefaultDeviceChanged extends Callback {
+    void invoke(WString id, int type, int role);
   }
 
   interface StringCallback extends Callback {

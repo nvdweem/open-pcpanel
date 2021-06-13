@@ -1,4 +1,5 @@
 #pragma once
+#include "helper.h"
 
 #ifdef SNDCTRL_EXPORTS
 #define SNDCTRL_API __declspec(dllexport)
@@ -12,14 +13,16 @@ void deinit();
 void ProcessIdToName(DWORD processId, LPWSTR buffer, DWORD bufferSize);
 
 using StringCallback = void(const LPWSTR);
-using DeviceChangedCb = void(const LPWSTR name, const LPWSTR id, int volume, int muted);
+using DeviceChangedCb = void(const LPWSTR name, const LPWSTR id, int volume, int muted, int type);
 using DeviceRemovedCb = void(const LPWSTR);
 using SessionChangedCb = void(const DWORD pid, const LPWSTR name, const LPWSTR icon, int volume, int muted);
 using SessionRemovedCb = void(const DWORD);
+using DefaultDeviceChangedCb = void(const LPWSTR id, int type, int role);
 
 extern "C" SNDCTRL_API void init(
   DeviceChangedCb deviceChanged, DeviceRemovedCb deviceRemoved,
   SessionChangedCb sessionChanged, SessionRemovedCb sessionRemoved,
+  DefaultDeviceChangedCb defaultDeviceChanged,
   StringCallback debug, StringCallback info);
 
 
@@ -30,8 +33,8 @@ extern "C" SNDCTRL_API void setFgProcessVolume(int volume, bool osd);
 
 // State actions
 extern "C" SNDCTRL_API void setDeviceMute(const LPWSTR id, int muted, int osd);
-extern "C" SNDCTRL_API void setProcessMute(const LPWSTR name, bool muted, bool osd);
-extern "C" SNDCTRL_API void setActiveDevice(const LPWSTR id, bool osd);
+extern "C" SNDCTRL_API void setProcessMute(const LPWSTR name, int muted, int osd);
+extern "C" SNDCTRL_API void setActiveDevice(const LPWSTR id, int osd);
 
 void DeviceAdded(CComPtr<IMMDevice> pDevice);
 
@@ -86,7 +89,7 @@ public:
   void Stop();
 
   virtual HRESULT STDMETHODCALLTYPE OnDeviceStateChanged(LPCWSTR pwstrDeviceId, DWORD dwNewState) { return S_OK; }
-  virtual HRESULT STDMETHODCALLTYPE OnDefaultDeviceChanged(EDataFlow flow, ERole role, LPCWSTR pwstrDefaultDeviceId) { return S_OK; }
+  virtual HRESULT STDMETHODCALLTYPE OnDefaultDeviceChanged(EDataFlow flow, ERole role, LPCWSTR pwstrDefaultDeviceId);
   virtual HRESULT STDMETHODCALLTYPE OnPropertyValueChanged(LPCWSTR pwstrDeviceId, const PROPERTYKEY key) { return S_OK; }
   virtual HRESULT STDMETHODCALLTYPE OnDeviceAdded(LPCWSTR pwstrDeviceId);
   virtual HRESULT STDMETHODCALLTYPE OnDeviceRemoved(LPCWSTR pwstrDeviceId);
