@@ -78,6 +78,8 @@ public interface ConfigElement {
     String label();
 
     String[] options();
+
+    boolean horizontal() default true;
   }
 
 

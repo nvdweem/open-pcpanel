@@ -1,3 +1,8 @@
 mat-radio-button {
   padding-right: 1em;
 }
+
+mat-radio-group.vertical mat-radio-button {
+  display: block;
+  margin-bottom: .5em;
+}

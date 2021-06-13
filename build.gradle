@@ -17,4 +17,8 @@ configure(subprojects.findAll { it.name != 'sndctrlpp' }) {
     maven { url 'https://repo.spring.io/snapshot' }
     mavenCentral()
   }
+
+  dependencies {
+    compileOnly group: 'one.util', name: 'streamex', version: '0.7.3'
+  }
 }

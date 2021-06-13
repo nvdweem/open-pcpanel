@@ -60,7 +60,7 @@
     <mat-form-field *ngSwitchCase="'radio'" floatLabel="always">
       <mat-label>{{elem.label}}</mat-label>
       <input matInput hidden>
-      <mat-radio-group [formControlName]="elem.name">
+      <mat-radio-group [formControlName]="elem.name" [class.vertical]="!elem.horizontal">
         <mat-radio-button *ngFor="let option of elem.options" [value]="option">{{option}}</mat-radio-button>
       </mat-radio-group>
     </mat-form-field>

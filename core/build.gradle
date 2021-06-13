@@ -19,6 +19,7 @@ dependencies {
   implementation project(':plugin')
   implementation project(':volumecontrol')
   implementation project(':startapplication')
+  implementation project(':mediakeys')
 }
 
 test {
