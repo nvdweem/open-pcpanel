@@ -123,7 +123,6 @@ extern "C" SNDCTRL_API void init(
         pDevice->GetId(&id);
 
         co_ptr<WCHAR> pId(id);
-        cout << df << " & " << rl << endl;
         defaultDeviceChanged(id, dataflow, role);
       }
     }
