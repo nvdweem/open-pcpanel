@@ -28,7 +28,7 @@ public class FocusVolumeControl implements AnalogAction<FocusVolumeControl.Focus
 
   @Override public void triggerAction(Control control, FocusVolumeConfig config, int sliderPos) {
     var pos = Util.translateAnalog(sliderPos, config.isLogScaling(), config.getTrimMin(), config.getTrimMax());
-    vcService.setFgVolume(pos, config.isOsd());
+    vcService.setFgProcessVolume(pos, config.isOsd());
   }
 
   @Data

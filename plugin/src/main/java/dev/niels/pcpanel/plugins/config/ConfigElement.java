@@ -70,6 +70,17 @@ public interface ConfigElement {
     String listSource();
   }
 
+  @Retention(RetentionPolicy.RUNTIME) @interface Radio {
+    String type() default "radio";
+
+    String def() default "";
+
+    String label();
+
+    String[] options();
+  }
+
+
   @Retention(RetentionPolicy.RUNTIME) @interface Color {
     String type() default "color";
 

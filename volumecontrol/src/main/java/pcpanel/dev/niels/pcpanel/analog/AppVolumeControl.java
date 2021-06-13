@@ -5,14 +5,20 @@ import dev.niels.pcpanel.plugins.Control;
 import dev.niels.pcpanel.plugins.config.ActionConfig;
 import dev.niels.pcpanel.plugins.config.ConfigElement;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RestController;
+import pcpanel.dev.niels.pcpanel.Util;
+import pcpanel.dev.niels.pcpanel.natives.VolumeControlService;
 
 @Slf4j
 @Component
 @RestController
+@RequiredArgsConstructor
 public class AppVolumeControl implements AnalogAction<AppVolumeControl.AppVolumeConfig> {
+  private final VolumeControlService vcService;
+
   @Override public String getName() {
     return "App volume";
   }
@@ -22,7 +28,8 @@ public class AppVolumeControl implements AnalogAction<AppVolumeControl.AppVolume
   }
 
   @Override public void triggerAction(Control control, AppVolumeConfig config, int sliderPos) {
-    log.error("Action not implemented yet");
+    var pos = Util.translateAnalog(sliderPos, config.isLogScaling(), config.getTrimMin(), config.getTrimMax());
+    vcService.setProcessVolume(config.getApplication(), pos, config.isOsd());
   }
 
   @Data

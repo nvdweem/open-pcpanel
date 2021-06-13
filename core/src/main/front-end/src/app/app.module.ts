@@ -31,6 +31,7 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {FilePickerComponent} from './config/file-picker/file-picker.component';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {ProComponent} from './device/pro/pro.component';
+import {MatRadioModule} from '@angular/material/radio';
 
 @NgModule({
   declarations: [
@@ -67,6 +68,7 @@ import {ProComponent} from './device/pro/pro.component';
     MatOptionModule,
     MatDialogModule,
     MatProgressSpinnerModule,
+    MatRadioModule,
   ],
   providers: [
     {

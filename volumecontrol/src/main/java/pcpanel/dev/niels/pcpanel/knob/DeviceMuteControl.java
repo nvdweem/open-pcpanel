@@ -8,9 +8,12 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import pcpanel.dev.niels.pcpanel.Util;
 import pcpanel.dev.niels.pcpanel.natives.VolumeControlService;
 
 import java.awt.Color;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -27,10 +30,29 @@ public class DeviceMuteControl implements KnobAction<DeviceMuteControl.DeviceMut
   }
 
   @Override public void buttonDown(Control control, DeviceMuteConfig config) {
-    if (vcService.toggleDeviceMute(config.getDevice(), config.isOsd())) {
-      if (config.isHasMuteColor()) {
-        control.setSingleColor(config.getMuteColor());
-      }
+    var device = Util.determineDevice(config.getWhich(), config.getDevice(), config.getWhichDefault());
+    if (!StringUtils.hasText(device)) {
+      log.warn("No device found for {}, doing nothing instead.", config);
+      return;
+    }
+    var osd = config.isOsd();
+
+    boolean muted = false;
+    switch (Optional.ofNullable(config.getAction()).orElse("Toggle")) {
+      case "Toggle":
+        muted = vcService.toggleDeviceMute(device, osd);
+        break;
+      case "Mute":
+        vcService.setDeviceMute(device, true, osd);
+        muted = true;
+        break;
+      case "Unmute":
+        vcService.setDeviceMute(device, false, osd);
+        break;
+    }
+
+    if (muted && config.isHasMuteColor()) {
+      control.setSingleColor(config.getMuteColor());
     } else {
       control.setSingleColor(null);
     }
@@ -38,6 +60,9 @@ public class DeviceMuteControl implements KnobAction<DeviceMuteControl.DeviceMut
 
   @Data
   public static class DeviceMuteConfig implements ActionConfig {
+    @ConfigElement.Radio(label = "What to do", options = {"Toggle", "Mute", "Unmute"}, def = "Toggle") private String action;
+    @ConfigElement.Radio(label = "What to mute", options = {"Default", "Specific"}, def = "Default") private String which;
+    @ConfigElement.Radio(label = "If default, which default", options = {"Multimedia out", "Multimedia in", "Communications out", "Communications in"}, def = "Multimedia out") private String whichDefault;
     @ConfigElement.Dropdown(label = "Device", listSource = "volumecontrol/devices") private String device;
     @ConfigElement.Checkbox(label = "Show OSD") private boolean osd;
     @ConfigElement.Checkbox(label = "Enable mute color") private boolean hasMuteColor;

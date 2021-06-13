@@ -58,18 +58,44 @@ public class VolumeControlService {
       });
   }
 
-  public void setFgVolume(int volume, boolean osd) {
+  /* Implementations of VolumeControlLib functions */
+  public void setDeviceVolume(String id, int volume, boolean osd) {
+    VolumeControlLib.INSTANCE.setDeviceVolume(new WString(id), volume, osd ? 1 : 0);
+  }
+
+  public void setProcessVolume(String name, int volume, boolean osd) {
+    VolumeControlLib.INSTANCE.setProcessVolume(new WString(name), volume, osd ? 1 : 0);
+  }
+
+  public void setFgProcessVolume(int volume, boolean osd) {
     VolumeControlLib.INSTANCE.setFgProcessVolume(volume, osd ? 1 : 0);
+  }
+
+  public void setDeviceMute(String id, boolean muted, boolean osd) {
+    VolumeControlLib.INSTANCE.setDeviceMute(new WString(id), muted ? 1 : 0, osd ? 1 : 0);
   }
 
   public boolean toggleDeviceMute(String device, boolean osd) {
     var dev = devices.get(device);
     if (dev != null) {
-      var muted = dev.isMuted();
-      VolumeControlLib.INSTANCE.setDeviceMute(new WString(device), muted ? 0 : 1, osd ? 1 : 0);
-      return !muted;
+      var muted = !dev.isMuted();
+      setDeviceMute(device, muted, osd);
+      return muted;
     }
     return false;
   }
 
+  public void setProcessMute(String name, boolean muted, boolean osd) {
+    VolumeControlLib.INSTANCE.setProcessMute(new WString(name), muted ? 1 : 0, osd ? 1 : 0);
+  }
+
+  public boolean toggleProcessMute(String name, boolean osd) {
+    var muted = !StreamEx.of(sessions.values()).findFirst(s -> s.getProcess().toLowerCase().contains(name.toLowerCase())).map(VolumeSession::isMuted).orElse(true);
+    setProcessMute(name, muted, osd);
+    return muted;
+  }
+
+  public void setActiveDevice(String id, VolumeDevice.DeviceRole role, boolean osd) {
+    VolumeControlLib.INSTANCE.setActiveDevice(new WString(id), role.ordinal(), osd ? 1 : 0);
+  }
 }

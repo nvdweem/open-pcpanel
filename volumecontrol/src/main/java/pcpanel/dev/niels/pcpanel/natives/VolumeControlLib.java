@@ -32,7 +32,7 @@ public interface VolumeControlLib extends Library {
 
   void setProcessMute(WString name, int muted, int osd);
 
-  void setActiveDevice(WString id, int osd);
+  void setActiveDevice(WString id, int role, int osd);
 
   interface DeviceChanged extends Callback {
     void invoke(WString name, WString id, int volume, int muted, int type);

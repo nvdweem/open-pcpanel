@@ -34,7 +34,7 @@ extern "C" SNDCTRL_API void setFgProcessVolume(int volume, bool osd);
 // State actions
 extern "C" SNDCTRL_API void setDeviceMute(const LPWSTR id, int muted, int osd);
 extern "C" SNDCTRL_API void setProcessMute(const LPWSTR name, int muted, int osd);
-extern "C" SNDCTRL_API void setActiveDevice(const LPWSTR id, int osd);
+extern "C" SNDCTRL_API void setActiveDevice(const LPWSTR id, int role, int osd);
 
 void DeviceAdded(CComPtr<IMMDevice> pDevice);
 

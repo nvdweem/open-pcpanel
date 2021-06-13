@@ -2,6 +2,7 @@
 #include "sndctrl.h"
 #include "helper.h"
 #include "volumeosd.h"
+#include "policyconfig.h"
 
 DeviceChangedCb* deviceChanged;
 DeviceRemovedCb* deviceRemoved;
@@ -184,13 +185,14 @@ extern "C" SNDCTRL_API void setDeviceVolume(const LPWSTR id, int volume, bool os
 }
 
 extern "C" SNDCTRL_API void setProcessVolume(const LPWSTR name, int volume, bool osd) {
-  wstring wname(name);
-  if (name2control.find(wname) != name2control.end()) {
-    for (CComPtr<IAudioSessionControl>& session : name2control[wname]) {
-      CComQIPtr<ISimpleAudioVolume> cc = session.p;
-      if (cc) {
-        cc->SetMasterVolume(volume / 100.0f, nullptr);
-        ShowVolume(volume, false, osd);
+  for (auto& p : name2control) {
+    if (p.first.find(name) != -1) {
+      for (CComPtr<IAudioSessionControl>& session : p.second) {
+        CComQIPtr<ISimpleAudioVolume> cc = session.p;
+        if (cc) {
+          cc->SetMasterVolume(volume / 100.0f, nullptr);
+          ShowVolume(volume, false, osd);
+        }
       }
     }
   }
@@ -249,8 +251,14 @@ extern "C" SNDCTRL_API void setProcessMute(const LPWSTR name, int muted, int osd
   ShowVolume(volume * 100, muted != 0, osd != 0);
 }
 
-extern "C" SNDCTRL_API void setActiveDevice(const LPWSTR id, bool osd) {
-  cout << "Set active device " << id << endl;
+extern "C" SNDCTRL_API void setActiveDevice(const LPWSTR id, int role, int osd) {
+  CComPtr<IPolicyConfigVista> pPolicyConfig;
+  ERole reserved = (ERole) role;
+
+  HRESULT hr = CoCreateInstance(__uuidof(CPolicyConfigVistaClient), NULL, CLSCTX_ALL, __uuidof(IPolicyConfigVista), (LPVOID*)&pPolicyConfig);
+  if (SUCCEEDED(hr)) {
+    pPolicyConfig->SetDefaultEndpoint(id, reserved);
+  }
 }
 
 
