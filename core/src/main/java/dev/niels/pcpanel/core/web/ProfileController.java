@@ -9,9 +9,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import one.util.streamex.StreamEx;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -38,6 +40,27 @@ public class ProfileController {
       device.setActiveProfile(device.getProfiles().get(0));
     }
 
+    return device.getProfiles();
+  }
+
+  @Transactional
+  @PutMapping("profile/{deviceId}")
+  public List<Profile> renameProfile(@PathVariable String deviceId, @RequestBody Profile body) {
+    var device = deviceService.getDevice(deviceId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
+    var profile = StreamEx.of(device.getProfiles()).filterBy(Profile::getId, body.getId()).findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
+    device.getProfiles().remove(profile);
+    device.getProfiles().add(body);
+    profileRepository.save(body.prepareForSave(objectMapper));
+    return device.getProfiles();
+  }
+
+  @Transactional
+  @DeleteMapping("profile/{deviceId}/{profileId}")
+  public List<Profile> deleteProfile(@PathVariable String deviceId, @PathVariable Long profileId) {
+    var device = deviceService.getDevice(deviceId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
+    var profile = StreamEx.of(device.getProfiles()).filterBy(Profile::getId, profileId).findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
+    device.getProfiles().remove(profile);
+    profileRepository.delete(profile);
     return device.getProfiles();
   }
 

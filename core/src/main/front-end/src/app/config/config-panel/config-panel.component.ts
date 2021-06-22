@@ -54,10 +54,7 @@ export class ConfigPanelComponent {
     this.group = new FormGroup(controls);
 
     this.sub?.unsubscribe();
-    this.sub = this.group.valueChanges.pipe(startWith(this.group.value), untilDestroyed(this)).subscribe(val => {
-      console.log(val);
-      this.configChanged.next(val);
-    });
+    this.sub = this.group.valueChanges.pipe(startWith(this.group.value), untilDestroyed(this)).subscribe(val => this.configChanged.next(val));
   }
 
   @Input()

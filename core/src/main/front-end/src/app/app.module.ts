@@ -32,6 +32,7 @@ import {FilePickerComponent} from './config/file-picker/file-picker.component';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {ProComponent} from './device/pro/pro.component';
 import {MatRadioModule} from '@angular/material/radio';
+import {MatMenuModule} from '@angular/material/menu';
 
 @NgModule({
   declarations: [
@@ -69,6 +70,7 @@ import {MatRadioModule} from '@angular/material/radio';
     MatDialogModule,
     MatProgressSpinnerModule,
     MatRadioModule,
+    MatMenuModule,
   ],
   providers: [
     {
