@@ -39,7 +39,7 @@ export class ActionComponent {
         this.actionType = data.type;
 
         idx = Number(number) - 1;
-        if (type === 'slider') idx += 4;
+        if (type === 'slider') idx += 5;
       }),
       switchMap(() => combineLatest([ds.device$(device), this.actionType === 'click' ? actionsService.click : actionsService.analog])),
       map(([device, aa]) => {
