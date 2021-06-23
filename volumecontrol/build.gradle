@@ -5,5 +5,5 @@ plugins {
 dependencies {
   compileOnly project(':plugin')
   compileOnly 'org.springframework.boot:spring-boot-starter-web'
-  implementation group: 'net.java.dev.jna', name: 'jna', version: '5.8.0'
+  compileClasspath group: 'net.java.dev.jna', name: 'jna', version: '5.8.0'
 }
