@@ -114,6 +114,6 @@ public class DeviceHandler {
       tcs = (a, b) -> {
       };
     }
-    return new ControlWrapper(isSlider, scs, tcs);
+    return new ControlWrapper(isSlider, scs, tcs, event.getConnectedDevice());
   }
 }

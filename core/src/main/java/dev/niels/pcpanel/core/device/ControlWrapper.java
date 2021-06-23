@@ -10,6 +10,7 @@ public class ControlWrapper implements Control {
   private final boolean slider;
   private final SingleColorSetter scs;
   private final TwoColorSetter tcs;
+  private final ConnectedDevice device;
 
   @Override public void setSingleColor(Color c) {
     scs.setColor(c);
