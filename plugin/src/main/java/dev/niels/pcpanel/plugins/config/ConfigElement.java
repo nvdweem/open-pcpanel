@@ -70,6 +70,14 @@ public interface ConfigElement {
     String listSource();
   }
 
+  @Retention(RetentionPolicy.RUNTIME) @interface PickList {
+    String type() default "picklist";
+
+    String label();
+
+    String listSource();
+  }
+
   @Retention(RetentionPolicy.RUNTIME) @interface Radio {
     String type() default "radio";
 

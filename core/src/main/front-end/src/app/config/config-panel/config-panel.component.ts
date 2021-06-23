@@ -48,6 +48,8 @@ export class ConfigPanelComponent {
           case 'color':
             this.colorControls[ce.name] = new ColorPickerControl().hidePresets().hideAlphaChannel();
             break;
+          case 'picklist':
+            this.initPickList(ce, controls[ce.name]);
         }
       }
     }
@@ -105,5 +107,30 @@ export class ConfigPanelComponent {
 
   getColor(control: AbstractControl): any {
     return Color.from(control.value);
+  }
+
+  private initPickList(ce: ConfigElement, control: AbstractControl): void {
+    const allOptions = this.http.get<ListOption[]>(`api/${ce.listSource}`).pipe(shareReplay(1));
+    const selected = control.valueChanges.pipe(startWith(control.value), map(() => {
+      const vs = (control.value || []) as ListOption[];
+      const rs: { [key: string]: string } = {};
+      (vs || []).forEach(v => rs[v.value] = v.display);
+      return rs;
+    }));
+    this.listOptions[ce.name] = combineLatest([allOptions, selected]).pipe(map(([vs, f]) => vs.filter(v => !f[v.value])));
+  }
+
+  addToPickList(control: AbstractControl, profile: ListOption): void {
+    const ctrl = control as FormControl;
+    const target = ctrl.value || [];
+    target.push(profile);
+    ctrl.setValue(target);
+  }
+
+  removeFromPickList(control: AbstractControl, profile: ListOption): void {
+    const ctrl = control as FormControl;
+    const target = (ctrl.value || []) as ListOption[];
+    target.splice(target.findIndex(i => i.value === profile.value), 1);
+    ctrl.setValue(target);
   }
 }

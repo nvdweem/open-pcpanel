@@ -22,6 +22,8 @@ import dev.niels.pcpanel.core.device.light.control.VolumeGradientConfig;
 import dev.niels.pcpanel.core.profile.Actions;
 import dev.niels.pcpanel.plugins.Action;
 import dev.niels.pcpanel.plugins.config.ActionConfig;
+import dev.niels.pcpanel.plugins.config.ConfigElement;
+import dev.niels.pcpanel.plugins.config.DropDownOption;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -77,6 +79,8 @@ public class DeviceController {
         value = Integer.parseInt(value.toString());
       } else if (f.getType() == Color.class && value != null) {
         value = JsonColor.ColorDeserializer.parseColor(value.toString());
+      } else if (f.getAnnotation(ConfigElement.PickList.class) != null) {
+        value = DropDownOption.fromList(value);
       }
       try {
         ReflectionUtils.setField(f, obj, value);

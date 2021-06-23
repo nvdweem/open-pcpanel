@@ -6,3 +6,12 @@ mat-radio-group.vertical mat-radio-button {
   display: block;
   margin-bottom: .5em;
 }
+
+.pick-list {
+  display: flex;
+  align-items: stretch;
+
+  mat-divider {
+    margin: 0 10px 0 0;
+  }
+}
