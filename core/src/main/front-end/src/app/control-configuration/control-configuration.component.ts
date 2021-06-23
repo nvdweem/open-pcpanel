@@ -7,6 +7,7 @@ interface State {
   hasButton: boolean;
   hasAnalog: boolean;
   hasLabelLight: boolean;
+  title: string;
 }
 
 @Component({
@@ -24,7 +25,23 @@ export class ControlConfigurationComponent {
       const hasButton = ['knob'].indexOf(type) !== -1;
       const hasAnalog = ['knob', 'slider'].indexOf(type) !== -1;
       const hasLabelLight = ['slider'].indexOf(type) !== -1;
-      return {hasButton, hasAnalog, hasLabelLight};
+      let title = this.determineTitle(type, Number(ps.get('number')));
+      return {hasButton, hasAnalog, hasLabelLight, title};
     }));
+  }
+
+  private determineTitle(type: string, nr: number): string {
+    switch (type) {
+      case 'knob':
+        return `Knob ${nr}`;
+      case 'slider':
+        return `Slider ${nr}`;
+      case 'body':
+        return 'Body';
+      case 'logo':
+        return 'Logo';
+      default:
+        return 'Unknown';
+    }
   }
 }
