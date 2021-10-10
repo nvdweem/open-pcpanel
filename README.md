@@ -1,7 +1,13 @@
 # Read Me First
-The following was discovered as part of building this project:
 
-* The following dependency is not known to work with Spring Native: 'Quartz Scheduler'. As a result, your application may not work as expected.
+This project was started to reverse engineer the pcpanel software and to see if I could make some improvements (like plugin support). I got bored building it so it's not very functional.
+
+The c++ part mostly seems to do what it should, control volume using jna calls from Java. The interface with the PCPanel Pro works mostly (setting lights, getting events) but the interface isn't great and doesn't work very nicely.
+
+The project could be used by someone else to build a fully functioning alternative.
+
+The instructions for the PCPanel Pro and Mini are different so to make this compatible with the Mini it would require some more reverse engineering those commands.
+
 
 # Getting Started
 
