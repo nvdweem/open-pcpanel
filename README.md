@@ -1,3 +1,8 @@
+# Deprecated
+This project was deprecated in favor of decompiling the original software and proceeding from there.
+
+[The new project can be found here](https://github.com/nvdweem/PCPanel)
+
 # Read Me First
 
 This project was started to reverse engineer the pcpanel software and to see if I could make some improvements (like plugin support). I got bored building it so it's not very functional.
